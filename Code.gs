@@ -37,7 +37,9 @@ const TAROT_DAILY_CAP   = 300;
 function doGet(e) {
   // ถ้าเรียกด้วย ?fn=... ให้ตอบเป็น JSON (สำหรับ Static Frontend)
   if (e && e.parameter && e.parameter.fn) {
-    return handleApi_(e.parameter);
+    let args = [];
+    try { args = JSON.parse(e.parameter.args || "[]"); } catch (err) {}
+    return handleApi_({ fn: e.parameter.fn, args: args });
   }
   return HtmlService.createHtmlOutputFromFile("Index")
     .setTitle("Thai Analyzer")

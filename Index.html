@@ -1,0 +1,2348 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thai Analyzer</title>
+
+<meta name="theme-color" content="#090b10"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+
+<style>
+:root{color-scheme:dark;
+--bg:#0b0d16;--s:#131726;--s2:#1a1f33;--s3:#0f1220;--bd:#272d46;--bd2:#394061;
+--a:#e2b65a;--a2:#9588f7;--w:#f1a24f;--r:#ef6b73;--ok:#52cfa3;
+--t:#eceaf3;--t2:#9aa1bb;--t3:#c6cadb;
+--pri:#6a5bdf;--pri-h:#7a6cf0;--gold-h:#efc772;
+--ff:'IBM Plex Sans Thai','Sarabun','Noto Sans Thai',system-ui,-apple-system,'Segoe UI',sans-serif;
+--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--t);font-family:var(--ff);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;scrollbar-color:var(--bd2) var(--bg)}
+h2{font-size:21px;font-weight:700;line-height:1.35;letter-spacing:.01em;color:var(--t)}
+b{font-weight:600}
+a{color:var(--a);text-underline-offset:3px}a:hover{color:var(--gold-h)}
+.box{max-width:720px;margin:0 auto;padding:1.25rem 1rem 3rem;padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:.85rem;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+::placeholder{color:#6b7391;opacity:1}
+.inp,.sel{width:100%;background:var(--s3);border:1px solid var(--bd);color:var(--t);padding:.65rem .85rem;border-radius:10px;margin-bottom:.65rem;font:inherit;font-size:15px;min-height:44px;transition:border-color .15s,box-shadow .15s}
+.inp:hover,.sel:hover{border-color:var(--bd2)}
+.inp:focus,.sel:focus{outline:none;border-color:var(--a2);box-shadow:0 0 0 3px rgba(149,136,247,.25)}
+textarea.inp{min-height:84px;resize:vertical}
+.sel{appearance:none;-webkit-appearance:none;padding-right:2.3rem;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239aa1bb' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .9rem center}
+.sel option{background:var(--s2);color:var(--t)}
+input[type=file].inp{padding:.45rem .6rem;color:var(--t2);font-size:13px}
+input[type=file]::file-selector-button{margin-right:.7rem;padding:.4rem .8rem;border:1px solid var(--bd2);border-radius:8px;background:var(--s2);color:var(--t);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+input[type=file]::file-selector-button:hover{border-color:var(--a2)}
+input[type=checkbox]{accent-color:var(--a);width:16px;height:16px;vertical-align:-3px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row .sel{flex:1;min-width:96px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.15rem;min-height:42px;border:1px solid transparent;border-radius:10px;background:var(--pri);color:#fff;font:inherit;font-size:14.5px;font-weight:600;line-height:1.3;cursor:pointer;transition:background .15s,border-color .15s,transform .05s}
+.btn:hover{background:var(--pri-h)}.btn:active{transform:translateY(1px)}
+.btn.g{background:var(--a);color:#1b1405}.btn.g:hover{background:var(--gold-h)}
+.btn.o{background:transparent;border-color:var(--bd2);color:var(--t3)}.btn.o:hover{border-color:var(--a2);color:var(--t);background:rgba(149,136,247,.08)}
+.btn.r{background:var(--r);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn:focus-visible,.tab:focus-visible,summary:focus-visible,.tb:focus-visible,a:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.9rem}
+.tab{padding:.45rem .95rem;border-radius:9px;border:1px solid var(--bd);background:var(--s3);color:var(--t2);cursor:pointer;font-weight:500;font-size:14px;user-select:none;transition:color .15s,border-color .15s,background .15s}
+.tab:hover{color:var(--t);border-color:var(--bd2)}
+.tab.on{background:rgba(149,136,247,.16);color:#fff;border-color:var(--a2);font-weight:600}
+.err{color:var(--r);min-height:20px;font-size:13.5px;margin:.35rem 0}.ok{color:var(--ok)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:.9rem;padding-bottom:.75rem;border-bottom:1px solid var(--bd)}
+.n3{font:600 24px var(--mono);color:var(--a2);letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.n6{font:600 20px var(--mono);color:var(--a);font-variant-numeric:tabular-nums}
+.h{border-left:3px solid var(--a2);background:var(--s2);border-radius:4px 12px 12px 4px;padding:.85rem 1rem;margin-bottom:.7rem}
+.sm{font-size:12px;color:var(--t2);line-height:1.6}
+.slip{display:block;max-width:100%;max-height:220px;border-radius:12px;margin:.6rem 0;background:#fff;padding:6px}
+.sec-title{font-size:13px;font-weight:600;color:var(--t2);margin:14px 0 8px;letter-spacing:.01em}
+.timg{width:100%;max-width:220px;border-radius:10px;display:block;margin:8px auto;background:var(--s3);min-height:120px}
+.timg.rev{transform:rotate(180deg)}
+.sets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.sets{grid-template-columns:1fr}}
+.set{background:var(--s3);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;min-width:0}
+.set.six{grid-column:1/-1;border-color:rgba(226,182,90,.5);background:linear-gradient(180deg,#1b170f,var(--s3));box-shadow:inset 0 0 0 4px var(--s3),inset 0 0 0 5px rgba(226,182,90,.2)}
+.set .lbl{font-size:12px;color:var(--t2);margin-bottom:2px}
+.set .num{font:700 30px/1.2 var(--mono);letter-spacing:.12em;color:var(--a2);font-variant-numeric:tabular-nums}
+.set.six .num{font-size:36px;letter-spacing:.18em;color:var(--a)}
+.set .src{margin-top:8px;font-size:13px;color:var(--t3);word-break:break-word}
+.set .why{margin-top:4px;font-size:12.5px;color:var(--t2);line-height:1.65;word-break:break-word}
+.sumbox{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--s3);border:1px solid var(--bd);font-size:13px;color:var(--t3);line-height:1.75}
+.ulist{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.uline{display:flex;align-items:flex-start;gap:12px;background:var(--s3);border:1px solid var(--bd);border-radius:12px;padding:11px 14px}
+.uline.six{border-color:rgba(226,182,90,.5);background:linear-gradient(180deg,#1b170f,var(--s3))}
+.uline .k{min-width:78px;font-size:12.5px;color:var(--t2);padding-top:6px}
+.uline .n{font:700 26px/1.15 var(--mono);letter-spacing:.12em;color:var(--a2);font-variant-numeric:tabular-nums}
+.uline.six .n{color:var(--a);font-size:28px;letter-spacing:.16em}
+.uline .hint{flex:1;font-size:12.5px;color:var(--t2);line-height:1.55;padding-top:4px}
+/* Admin: users */
+.pill{display:inline-block;padding:1px 10px;border-radius:99px;font-size:11.5px;font-weight:600;border:1px solid var(--bd2);color:var(--t2);background:rgba(255,255,255,.02)}
+.pill.good{color:var(--ok);border-color:rgba(82,207,163,.4);background:rgba(82,207,163,.08)}
+.pill.warn{color:var(--w);border-color:rgba(241,162,79,.45);background:rgba(241,162,79,.08)}
+.pill.bad{color:var(--r);border-color:rgba(239,107,115,.45);background:rgba(239,107,115,.08)}
+b.good{color:var(--ok)}b.warn{color:var(--w)}b.bad{color:var(--r)}
+.ucard .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.6rem 0}
+.ucard .grid2>div{background:var(--s3);border:1px solid var(--bd);border-radius:10px;padding:7px 11px}
+.ucard .grid2 .sm{display:block}
+.ucard .flags{display:flex;gap:6px;flex-wrap:wrap;margin:.35rem 0}
+.ucard .act{display:flex;gap:8px;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.ucard .act .inp{flex:1;min-width:110px;margin:0}
+.ucard .st{font-size:12.5px;color:var(--t3);line-height:1.75}
+details.card>summary,details>summary{cursor:pointer;list-style:none;border-radius:6px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"\25B8";display:inline-block;width:1.1em;color:var(--t2);transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg);color:var(--a)}
+details>summary:hover{color:var(--t)}
+.ov{position:fixed;inset:0;z-index:9999;background:rgba(11,13,22,.94);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:2rem}
+.ov .spin{width:52px;height:52px;border-radius:50%;border:4px solid var(--bd);border-top-color:var(--a);animation:ovspin 1s linear infinite}
+@keyframes ovspin{to{transform:rotate(360deg)}}
+.ov .t1{font-size:18px;font-weight:700;color:var(--t)}
+.ov .t2{font-size:13.5px;color:var(--t2)}
+.pv-off{pointer-events:none;user-select:none;opacity:.92}
+.pv-blur{filter:blur(4px);user-select:none}
+.pv-list{margin:.6rem 0 .6rem 1.15rem;font-size:13.5px;color:var(--t3);line-height:1.85}
+.pv-list li::marker{color:var(--a)}
+@media(max-width:520px){.box{padding-top:.9rem}.card{padding:1rem}.set .num{font-size:27px}.set.six .num{font-size:30px;letter-spacing:.14em}.uline .n{font-size:22px}.uline{gap:8px;padding:10px 11px}.uline .k{min-width:58px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.ov .spin{animation-duration:2.4s!important;animation-iteration-count:infinite!important}}
+</style><style id="atelier">
+/* Thai Analyzer Atelier theme. Do not put angle-bracket tags in this block. */
+:root{
+  color-scheme:dark;
+  --bg:#090b10;
+  --s:#141821;
+  --s2:#1b202b;
+  --s3:#0e1118;
+  --bd:rgba(244,236,220,.10);
+  --bd2:rgba(244,236,220,.22);
+  --a:#e0c48a;
+  --a2:#f3ecdf;
+  --w:#e2a15c;
+  --r:#e07b74;
+  --ok:#7dcaa8;
+  --t:#f6f1e8;
+  --t2:#9c9488;
+  --t3:#d5ccbf;
+  --pri:#e0c48a;
+  --pri-h:#edd7a8;
+  --gold-h:#f3e6c8;
+  --ink:#14110c;
+  --ff:'IBM Plex Sans Thai','Sarabun','Noto Sans Thai',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 18px 50px rgba(0,0,0,.35);
+  --hair:linear-gradient(90deg,transparent,rgba(224,196,138,.55),transparent);
+}
+
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(980px 520px at 50% -180px, rgba(224,196,138,.10), transparent 60%),
+    radial-gradient(720px 420px at 110% 8%, rgba(120,138,170,.08), transparent 55%),
+    var(--bg);
+  color:var(--t);
+  font-family:var(--ff);
+  font-size:15px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  scrollbar-color:#3a342c var(--bg);
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  opacity:.45;
+  background-image:linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%);
+}
+#app{position:relative;z-index:1}
+
+h2{font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.3;color:var(--t)}
+b{font-weight:600}
+a{color:var(--a);text-underline-offset:3px}a:hover{color:var(--gold-h)}
+
+.box{
+  max-width:760px;margin:0 auto;
+  padding:1.6rem 1.05rem 4rem;
+  padding-left:max(1.05rem,env(safe-area-inset-left));
+  padding-right:max(1.05rem,env(safe-area-inset-right));
+}
+
+.card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 42%),
+    var(--s);
+  border:1px solid var(--bd);
+  border-radius:18px;
+  padding:1.15rem 1.2rem 1.2rem;
+  margin-bottom:.9rem;
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.card>h2{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.15rem}
+.card>h2::before{
+  content:"";width:18px;height:1px;background:var(--a);display:inline-block;transform:translateY(-4px)
+}
+
+::placeholder{color:#746d63;opacity:1}
+.inp,.sel{
+  width:100%;background:var(--s3);border:1px solid var(--bd);color:var(--t);
+  padding:.7rem .9rem;border-radius:12px;margin-bottom:.6rem;
+  font:inherit;font-size:15px;min-height:46px;
+  transition:border-color .15s,box-shadow .15s,background .15s;
+}
+.inp:hover,.sel:hover{border-color:var(--bd2)}
+.inp:focus,.sel:focus{outline:none;border-color:rgba(224,196,138,.7);box-shadow:0 0 0 3px rgba(224,196,138,.16);background:#12151c}
+textarea.inp{min-height:96px;resize:vertical}
+.sel{
+  appearance:none;-webkit-appearance:none;padding-right:2.4rem;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239c9488' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .95rem center;
+}
+.sel option{background:#1b202b;color:var(--t)}
+input[type=file].inp{padding:.5rem .65rem;color:var(--t2);font-size:13px}
+input[type=file]::file-selector-button{
+  margin-right:.7rem;padding:.42rem .85rem;border:1px solid var(--bd2);border-radius:9px;
+  background:#1c212c;color:var(--t);font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+input[type=file]::file-selector-button:hover{border-color:var(--a)}
+input[type=checkbox]{accent-color:var(--a);width:16px;height:16px;vertical-align:-3px}
+
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row .sel,.row .inp{flex:1;min-width:96px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.68rem 1.15rem;min-height:44px;border:1px solid transparent;border-radius:12px;
+  background:var(--a);color:var(--ink);font:inherit;font-size:14.5px;font-weight:600;line-height:1.3;
+  cursor:pointer;letter-spacing:.01em;
+  box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 8px 18px rgba(224,196,138,.12);
+  transition:background .15s,transform .05s,border-color .15s;
+}
+.btn:hover{background:var(--pri-h)}
+.btn:active{transform:translateY(1px)}
+.btn.g{background:#f6f1e8;color:#17140f}
+.btn.g:hover{background:#fff}
+.btn.o{background:transparent;border-color:var(--bd2);color:var(--t3);box-shadow:none}
+.btn.o:hover{border-color:var(--a);color:var(--t);background:rgba(224,196,138,.06)}
+.btn.r{background:#8d3d3a;color:#fff;box-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn:focus-visible,.tab:focus-visible,summary:focus-visible,.tb:focus-visible,a:focus-visible{
+  outline:2px solid var(--a);outline-offset:2px
+}
+
+.tabs{
+  display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;
+  padding:4px;background:rgba(255,255,255,.03);
+  border:1px solid var(--bd);border-radius:14px;
+}
+.tab{
+  padding:.42rem .85rem;border-radius:10px;border:1px solid transparent;
+  background:transparent;color:var(--t2);cursor:pointer;font-weight:500;font-size:13.5px;
+  user-select:none;transition:color .15s,background .15s;
+}
+.tab:hover{color:var(--t);background:rgba(255,255,255,.03)}
+.tab.on{background:#f6f1e8;color:#17140f;font-weight:600}
+
+.err{color:var(--r);min-height:20px;font-size:13.5px;margin:.35rem 0}
+.ok{color:var(--ok)}
+
+.top{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 0 1rem;padding:.85rem 1rem;
+  background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:16px;
+}
+.n3{font:600 22px var(--mono);color:var(--a2);letter-spacing:.14em;font-variant-numeric:tabular-nums}
+.n6{font:600 18px var(--mono);color:var(--a);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+
+.h{
+  border:1px solid var(--bd);border-left:2px solid var(--a);
+  background:var(--s2);border-radius:12px;padding:.9rem 1rem;margin-bottom:.7rem;
+}
+.sm{font-size:12.5px;color:var(--t2);line-height:1.65}
+.slip{display:block;max-width:180px;border-radius:14px;margin:.7rem 0;background:#fff;padding:8px;border:1px solid var(--bd)}
+
+.sec-title{
+  display:flex;align-items:center;gap:10px;
+  font-size:11.5px;font-weight:600;color:var(--t2);
+  margin:16px 0 10px;letter-spacing:.16em;text-transform:uppercase;
+}
+.sec-title::after{content:"";flex:1;height:1px;background:var(--hair)}
+
+.timg{width:100%;max-width:200px;border-radius:12px;display:block;margin:10px auto;background:var(--s3);min-height:80px;border:1px solid var(--bd)}
+.timg.rev{transform:rotate(180deg)}
+
+.sets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.set{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#171b24,#10141c);
+  border:1px solid var(--bd);border-radius:16px;padding:14px 14px 13px;min-width:0;
+}
+.set::after{
+  content:"";position:absolute;left:14px;right:14px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(224,196,138,.45),transparent);
+}
+.set.six{
+  grid-column:1/-1;
+  border-color:rgba(224,196,138,.35);
+  background:
+    radial-gradient(420px 120px at 80% 0%, rgba(224,196,138,.12), transparent 60%),
+    linear-gradient(180deg,#1c1812,#10141c);
+}
+.set .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.set .num{font:600 30px/1.15 var(--mono);letter-spacing:.16em;color:var(--a2);font-variant-numeric:tabular-nums}
+.set.six .num{font-size:38px;letter-spacing:.2em;color:var(--a)}
+.set .src{margin-top:8px;font-size:13px;color:var(--t3);word-break:break-word}
+.set .why{margin-top:4px;font-size:12.5px;color:var(--t2);line-height:1.65;word-break:break-word}
+
+.sumbox{
+  margin-top:12px;padding:13px 14px;border-radius:14px;
+  background:rgba(255,255,255,.025);border:1px solid var(--bd);
+  font-size:13.5px;color:var(--t3);line-height:1.75;
+}
+
+.ulist{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.uline{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--s3);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;
+}
+.uline.six{border-color:rgba(224,196,138,.35);background:linear-gradient(180deg,#1c1812,var(--s3))}
+.uline .k{min-width:78px;font-size:12px;letter-spacing:.04em;color:var(--t2);padding-top:7px}
+.uline .n{font:600 26px/1.15 var(--mono);letter-spacing:.14em;color:var(--a2);font-variant-numeric:tabular-nums}
+.uline.six .n{color:var(--a);font-size:28px;letter-spacing:.16em}
+.uline .hint{flex:1;font-size:12.5px;color:var(--t2);line-height:1.55;padding-top:4px}
+
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11.5px;font-weight:600;border:1px solid var(--bd2);color:var(--t2);background:rgba(255,255,255,.03)}
+.pill.good{color:var(--ok);border-color:rgba(125,202,168,.4);background:rgba(125,202,168,.08)}
+.pill.warn{color:var(--w);border-color:rgba(226,161,92,.4);background:rgba(226,161,92,.08)}
+.pill.bad{color:var(--r);border-color:rgba(224,123,116,.4);background:rgba(224,123,116,.08)}
+b.good{color:var(--ok)}b.warn{color:var(--w)}b.bad{color:var(--r)}
+
+.ucard .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.6rem 0}
+.ucard .grid2>div{background:var(--s3);border:1px solid var(--bd);border-radius:12px;padding:8px 12px}
+.ucard .grid2 .sm{display:block}
+.ucard .flags{display:flex;gap:6px;flex-wrap:wrap;margin:.35rem 0}
+.ucard .act{display:flex;gap:8px;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.ucard .act .inp{flex:1;min-width:110px;margin:0}
+.ucard .st{font-size:12.5px;color:var(--t3);line-height:1.75}
+
+details.card>summary,details>summary{cursor:pointer;list-style:none;border-radius:6px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"\25B8";display:inline-block;width:1.1em;color:var(--a);transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+details>summary:hover{color:var(--t)}
+
+.ov{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(9,11,16,.88);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+  text-align:center;padding:2rem;
+}
+.ov .spin{width:46px;height:46px;border-radius:50%;border:3px solid rgba(244,236,220,.15);border-top-color:var(--a);animation:ovspin .9s linear infinite}
+@keyframes ovspin{to{transform:rotate(360deg)}}
+.ov .t1{font-size:17px;font-weight:600;letter-spacing:.01em}
+.ov .t2{font-size:13px;color:var(--t2)}
+
+.pv-off{pointer-events:none;user-select:none}
+.pv-blur{filter:blur(5px);user-select:none}
+.pv-list{margin:.55rem 0 .7rem 1.1rem;font-size:13.5px;color:var(--t3);line-height:1.85}
+.pv-list li::marker{color:var(--a)}
+
+.tgrid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:.7rem 0}
+.tb{
+  width:42px;height:64px;border-radius:7px;border:1px solid rgba(224,196,138,.28);padding:0;cursor:pointer;
+  color:var(--a);font-size:15px;
+  background:
+    linear-gradient(160deg, rgba(224,196,138,.18), transparent 40%),
+    repeating-linear-gradient(45deg,#17140f,#17140f 4px,#221c14 4px,#221c14 8px);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.35);
+}
+.tb.on{border-color:var(--a);box-shadow:0 0 0 2px rgba(224,196,138,.45);color:#fff;font-weight:700}
+.kw{
+  display:inline-block;padding:2px 9px;margin:2px 4px 2px 0;border-radius:99px;
+  background:rgba(224,196,138,.1);border:1px solid rgba(224,196,138,.22);color:#efe6d4;font-size:12px;
+}
+.rp{margin:6px 0;line-height:1.75}
+.rcard.rev{border-left-color:var(--w)}
+
+table.bct{width:100%;border-collapse:collapse;font-size:13px;margin:.4rem 0 .8rem}
+table.bct th,table.bct td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--bd)}
+table.bct th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);font-weight:600}
+
+.t2stage{filter:saturate(.9)}
+.t2big{color:var(--a)!important}
+
+@media(max-width:520px){
+  .box{padding-top:1rem}
+  .card{padding:1rem}
+  .set .num{font-size:26px}
+  .set.six .num{font-size:30px;letter-spacing:.12em}
+  .uline .n{font-size:22px}
+  .uline{gap:8px;padding:10px 11px}
+  .uline .k{min-width:58px}
+  .sets{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .ov .spin{animation-duration:2.4s!important;animation-iteration-count:infinite!important}
+}
+
+.brand{display:flex;align-items:center;gap:12px;margin:0 0 .9rem}
+.mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#f6f1e8,#e0c48a);color:#17140f;font:700 14px var(--mono);letter-spacing:-.04em;box-shadow:0 8px 20px rgba(224,196,138,.18)}
+.brand .nm{font-size:14px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+.brand .sub{font-size:12px;color:var(--t2);margin-top:-2px}
+.kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--a);margin-bottom:2px}
+
+</style></head><body><div class="box" id="app"></div>
+<script>window.__errs=[];window.addEventListener("error",function(e){var x="";try{var ss=document.scripts,k;for(k=0;k<ss.length;k++){var t=ss[k].textContent||"";if(t.indexOf("function mTypes")>=0){var L=t.split("\n");x=" | len="+t.length+" lines="+L.length+" L"+(e.lineno-1)+"=["+(L[e.lineno-2]||"").slice(0,70)+"] L"+e.lineno+"=["+(L[e.lineno-1]||"").slice(0,70)+"]";break}}}catch(_){}window.__errs.push((e.message||"")+" (บรรทัด "+e.lineno+":"+e.colno+")"+x)});
+
+/* ===== ไพ่ยิปซี (Tarot) 78 ใบ — วางไว้ในแท็ก script ก่อนบรรทัด const MONTHS ===== */
+const T_MAJOR=[
+'เดอะฟูล|The Fool|เริ่มต้นใหม่ อิสระ กล้าเสี่ยง|ประมาท ขาดการไตร่ตรอง|เริ่มความสัมพันธ์ใหม่ ไม่ผูกมัด|เริ่มงานใหม่ ระวังใช้เงินเสี่ยง',
+'เดอะเมจิเชียน|The Magician|ความสามารถ ลงมือทำ พลังสร้างสรรค์|หลอกลวง ศักยภาพถูกใช้ผิดทาง|เสน่ห์ดึงดูด เริ่มจีบ|มีทักษะพร้อม ริเริ่มโปรเจกต์ได้',
+'เดอะไฮพริสเตส|The High Priestess|สัญชาตญาณ ความลับ ปัญญาภายใน|ปิดบัง ไม่ฟังใจตัวเอง|ความรู้สึกที่ยังไม่บอก|รอข้อมูลให้ครบก่อนตัดสินใจ',
+'เดอะเอมเพรส|The Empress|ความอุดมสมบูรณ์ ความรัก การดูแล|พึ่งพาเกินไป ทำตามใจ|รักอบอุ่น ตั้งครรภ์/ครอบครัว|งานงอกงาม การเงินดี',
+'เดอะเอมเพอเรอร์|The Emperor|อำนาจ ระเบียบ ความมั่นคง|เผด็จการ ยืดหยุ่นน้อย|คู่ที่จริงจัง มั่นคง|ผู้นำ วางระบบ การเงินเป็นระเบียบ',
+'เดอะไฮเยอโรแฟนท์|The Hierophant|ประเพณี ที่ปรึกษา ระบบ|ฝ่าฝืนกฎ คิดต่าง|ผูกพันตามครรลอง แต่งงาน|เรียนรู้จากผู้ใหญ่ ทำตามขั้นตอน',
+'เดอะเลิฟเวอร์ส|The Lovers|ความรัก การเลือก ความสอดคล้อง|ไม่ลงรอย เลือกผิด|คู่แท้ ความผูกพันลึก|ตัดสินใจตามคุณค่าที่ยึดถือ',
+'เดอะแชเรียต|The Chariot|ชัยชนะ มุ่งมั่น ควบคุมตัวเองได้|ขาดทิศทาง ควบคุมไม่อยู่|รุกไปข้างหน้า ผ่านอุปสรรค|เป้าหมายชัด เดินหน้าเต็มที่',
+'สเตรงธ์|Strength|กล้าหาญ อดทน ใจเย็น|ไม่มั่นใจ ใจอ่อนแอ|ใช้ความอ่อนโยนแก้ปัญหา|อดทนกับงานยาก',
+'เดอะเฮอร์มิท|The Hermit|ค้นหาตัวเอง ไตร่ตรอง|โดดเดี่ยวเกินไป แยกตัว|ขอเวลาอยู่กับตัวเอง|หาคำปรึกษา ทบทวนเส้นทาง',
+'วีลออฟฟอร์จูน|Wheel of Fortune|โชคชะตาเปลี่ยน วัฏจักร|โชคร้ายชั่วคราว ต้านการเปลี่ยน|จังหวะใหม่ของความสัมพันธ์|จังหวะขึ้น-ลงของงานและเงิน',
+'จัสติส|Justice|ยุติธรรม ความจริง เหตุและผล|ไม่เป็นธรรม หลีกเลี่ยงความรับผิดชอบ|ความสัมพันธ์ที่ซื่อตรง|สัญญา กฎหมาย ตัดสินอย่างเป็นธรรม',
+'เดอะแฮงด์แมน|The Hanged Man|หยุดรอ มองมุมใหม่ ยอมปล่อย|ยื้อเสียเวลา เสียสละเปล่า|ความสัมพันธ์ชะงัก ต้องมองใหม่|งานหยุดนิ่ง อย่าเพิ่งตัดสินใจ',
+'เดธ|Death|จบเพื่อเริ่มใหม่ เปลี่ยนแปลงครั้งใหญ่|ต้านการเปลี่ยนแปลง ยึดติด|จบบทเก่า เปิดบทใหม่|เปลี่ยนงาน/ปรับโครงสร้าง',
+'เทมเพอแรนซ์|Temperance|สมดุล พอดี อดทน|ไม่สมดุล สุดโต่ง|ความสัมพันธ์ปรับเข้าหากัน|บริหารเงินและเวลาอย่างพอดี',
+'เดอะเดวิล|The Devil|พันธนาการ ความหลง ความอยาก|หลุดพ้น ปลดปล่อย|ความสัมพันธ์ที่ติดพัน ควบคุม|ติดหนี้/งานที่ผูกมัด',
+'เดอะทาวเวอร์|The Tower|พังทลายกะทันหัน ความจริงเปิดเผย|เลี่ยงหายนะได้ ยื้อความล่ม|ความสัมพันธ์สะเทือน|เปลี่ยนแปลงฉับพลัน ตั้งหลักใหม่',
+'เดอะสตาร์|The Star|ความหวัง เยียวยา แรงบันดาลใจ|สิ้นหวัง ขาดศรัทธา|ความรักที่เยียวยา|อนาคตสดใส ค่อยๆ ดีขึ้น',
+'เดอะมูน|The Moon|ความกลัว ไม่ชัดเจน ภาพลวงตา|ความจริงเผย ความกลัวคลาย|ความไม่แน่ใจ ความลับ|ข้อมูลไม่ครบ ระวังถูกหลอก',
+'เดอะซัน|The Sun|ความสุข สำเร็จ ชัดเจน|สุขชะลอ มองโลกในแง่ร้าย|รักสดใส เปิดเผย|งานสำเร็จ การเงินดี',
+'จัดจ์เมนท์|Judgement|ตื่นรู้ เรียกร้อง ตัดสินใจครั้งใหญ่|ลังเล โทษตัวเอง|ให้อภัย เริ่มต้นใหม่|ทบทวนอดีตแล้วก้าวต่อ',
+'เดอะเวิลด์|The World|สำเร็จครบวงจร เติมเต็ม|เกือบสำเร็จ ขาดชิ้นสุดท้าย|ความสัมพันธ์สมบูรณ์|จบโปรเจกต์ ขยายสู่ระดับใหม่'
+];
+const T_SUITS=[
+{k:'wands',th:'ไม้เท้า (Wands)',en:'Wands',el:'ไฟ',d:'พลังงาน การงาน แรงบันดาลใจ',m:[
+'จุดเริ่มต้น แรงบันดาลใจ|ขาดแรงจูงใจ','วางแผนอนาคต|ลังเล ไม่กล้าออกจากที่เดิม','รอผลขยายงาน|แผนล่าช้า','เฉลิมฉลอง บ้านอบอุ่น|ไม่ลงรอยในบ้าน','แข่งขัน ขัดแย้งเล็กๆ|เลี่ยงความขัดแย้ง','ชัยชนะ ได้รับการยอมรับ|ล้มเหลว ขาดการยอมรับ','ปกป้องจุดยืน|ท้อ ยอมแพ้','ความเร็ว ข่าวมาไว|ล่าช้า ติดขัด','อดทนขั้นสุดท้าย|หมดแรง ระแวงเกินไป','แบกภาระหนัก|วางภาระ ปล่อยวาง','ข่าวสร้างแรงบันดาลใจ|ข่าวไม่ดี ขาดความมั่นใจ','ลุยเร็ว ผจญภัย|บุ่มบ่าม ใจร้อน','มั่นใจ มีเสน่ห์|เอาแต่ใจ หึงหวง','ผู้นำมีวิสัยทัศน์|เผด็จการ ใจร้อน']},
+{k:'cups',th:'ถ้วย (Cups)',en:'Cups',el:'น้ำ',d:'ความรัก อารมณ์ ความสัมพันธ์',m:[
+'ความรักใหม่ อารมณ์ล้นหลาม|อารมณ์อัดอั้น','คู่รัก ความเข้าใจ|ไม่ลงรอย เลิกรา','เพื่อนฝูง เฉลิมฉลอง|ซุบซิบ เที่ยวเกินพอดี','เบื่อ มองข้ามโอกาส|ตื่นจากความเฉย','เสียใจกับสิ่งที่เสียไป|เริ่มก้าวผ่านความเศร้า','ความทรงจำ คนเก่ากลับมา|ติดอยู่กับอดีต','ตัวเลือกมาก ภาพลวง|เลือกได้ชัดเจน','จากมาเพื่อหาสิ่งที่ลึกกว่า|หวนกลับ กลัวเปลี่ยน','สมหวัง พอใจ|สุขจอมปลอม โลภ','ครอบครัวสุข สมบูรณ์|ครอบครัวร้าว','ข่าวดีด้านใจ|อารมณ์ไม่มั่นคง','โรแมนติก ข้อเสนอ|สัญญาลมๆ แล้งๆ','อ่อนโยน เข้าใจ|อ่อนไหวเกินไป','สุขุมด้านอารมณ์|เก็บกด ควบคุมด้วยอารมณ์']},
+{k:'swords',th:'ดาบ (Swords)',en:'Swords',el:'ลม',d:'ความคิด ความขัดแย้ง การตัดสินใจ',m:[
+'ความจริง ความคิดชัด|สับสน ตัดสินใจผิด','ทางแยก ตัดสินใจไม่ได้|ตัดสินใจ หรือกดดันสุดขีด','อกหัก เจ็บปวด|เยียวยา ให้อภัย','พักฟื้น|ฝืนทำงานหนัก','ชนะแต่เสียน้ำใจ|ยอมรับ ปรองดอง','ผ่านช่วงยาก เดินทาง|ติดปัญหาเดิม','เล่ห์เหลี่ยม แอบทำ|สารภาพ ถูกจับได้','ติดกับดักความคิด|หลุดพ้นข้อจำกัด','กังวล นอนไม่หลับ|ความกังวลเริ่มคลาย','จบลงอย่างเจ็บปวด|ผ่านจุดต่ำสุด','ช่างสงสัย ข่าวสาร|พูดไม่คิด','มุ่งมั่น เด็ดขาด|ก้าวร้าว ด่วนตัดสิน','ตรงไปตรงมา ฉลาด|เย็นชา ใจแคบ','ตัดสินด้วยเหตุผล|เผด็จการ ใช้คำพูดทำร้าย']},
+{k:'pentacles',th:'เหรียญ (Pentacles)',en:'Pentacles',el:'ดิน',d:'เงินทอง การงาน ความมั่นคง',m:[
+'โอกาสการเงินใหม่|พลาดโอกาส','บริหารสมดุลเงินและเวลา|จัดการไม่ไหว','ทำงานเป็นทีม ฝีมือได้รับการยอมรับ|ขาดความร่วมมือ','ยึดเงินแน่น มั่นคง|ตระหนี่ เสียของ','ขัดสน เหนื่อย|ผ่านช่วงลำบาก','ให้และรับ แบ่งปัน|เป็นหนี้ ไม่ยุติธรรม','รอผลการลงทุน|ใจร้อน ผลไม่ออก','ฝึกฝน ทำงานประณีต|จำเจ ทำส่งๆ','มั่งคั่ง พึ่งตัวเอง|พึ่งพาผู้อื่น ใช้เกินตัว','มรดก ความมั่นคงระยะยาว|ปัญหาเงินในครอบครัว','โอกาสเรียน งานใหม่|ขี้เกียจ ขาดแรงจูงใจ','ขยัน มั่นคง|ช้า ยึดติด','ดูแล ใจกว้าง|วุ่นกับวัตถุ','ร่ำรวย มั่นคง|โลภ ยึดวัตถุ']}
+];
+const T_RANK=['Ace','2','3','4','5','6','7','8','9','10','Page','Knight','Queen','King'];
+const T_RANK_TH=['เอซ (จุดเริ่มต้น)','2 (ตัดสินใจ/สมดุล)','3 (เติบโต)','4 (มั่นคง/หยุดพัก)','5 (ท้าทาย)','6 (คลี่คลาย)','7 (ประเมิน/ป้องกัน)','8 (เคลื่อนไหว/ฝึกฝน)','9 (ใกล้ถึงเป้า)','10 (จบวัฏจักร)','เพจ (ข่าว/ผู้เริ่มต้น)','ไนต์ (ลงมือ/เคลื่อนที่)','ควีน (ผู้ดูแลภายใน)','คิง (ผู้ควบคุมภายนอก)'];
+const TAROT=[];
+T_MAJOR.forEach((s,i)=>{const p=s.split('|');TAROT.push({t:'major',no:i,th:p[0],en:p[1],up:p[2],rev:p[3],love:p[4],work:p[5],meta:'ไพ่ใบใหญ่ เลข '+i});});
+T_SUITS.forEach(su=>su.m.forEach((s,i)=>{const p=s.split('|');
+  TAROT.push({t:su.k,no:i+1,th:T_RANK[i]+' of '+su.en,en:T_RANK[i]+' of '+su.en,up:p[0],rev:p[1],
+  meta:'ชุด '+su.th+' · ธาตุ'+su.el+' · '+T_RANK_TH[i],suit:su.d});}));
+const T={q:'',f:'all'};
+/* ===== เรื่องราวและที่มาของไพ่ ===== */
+const T_HIST=[
+'ต้นกำเนิด: ไพ่ทาโรต์เริ่มในอิตาลีตอนเหนือช่วงกลางศตวรรษที่ 15 (ราวปี ค.ศ. 1430-1450) ชุดที่เก่าแก่ที่ยังหลงเหลือคือชุด Visconti-Sforza ตอนนั้นใช้เล่นเกมไพ่ชื่อ "ทาโรคกี" (tarocchi) ยังไม่ได้ใช้ทำนาย ไพ่ใบใหญ่ในสมัยนั้นเรียกว่า "ทริออนฟี" (trionfi แปลว่าชัยชนะ) คือไพ่ที่ชนะไพ่ธรรมดาได้',
+'ที่มาของ 4 ชุด: ไพ่ 4 ชุด (ถ้วย เหรียญ ดาบ ไม้เท้า) สืบมาจากไพ่ของราชวงศ์มัมลุกในอียิปต์ ที่เข้าสู่ยุโรปปลายศตวรรษที่ 14 ซึ่งมีสัญลักษณ์ถ้วย เหรียญ ดาบ และไม้โปโล',
+'ยุคลึกลับ: ปี ค.ศ. 1781 อ็องตวน กูร์ เดอ เชอบแลง (Court de Gébelin) อ้างว่าไพ่ทาโรต์มาจากอียิปต์โบราณ ซึ่งไม่มีหลักฐานรองรับ แต่ทำให้ไพ่ถูกมองเป็นเครื่องมือทางจิตวิญญาณ ต่อมา เอตเตยา (Etteilla) ทำชุดไพ่เพื่อการทำนายโดยเฉพาะเป็นชุดแรก ๆ',
+'ยุคสมัยใหม่: ปลายศตวรรษที่ 19 กลุ่ม Golden Dawn จัดระบบไพ่ให้สอดคล้องกับโหราศาสตร์และคาบาลาห์ ปี ค.ศ. 1909 สำนักพิมพ์ Rider ในลอนดอนออกไพ่ Rider-Waite-Smith โดย A. E. Waite เป็นผู้กำหนดแนวคิด และ Pamela Colman Smith เป็นผู้วาด ซึ่งเป็นชุดที่นิยมที่สุดและเป็นฐานของความหมายในหน้านี้'
+];
+const T_STORY=[
+'ชายหนุ่มก้าวเท้าไปที่ขอบหน้าผา โดยมีสุนัขตัวเล็กวิ่งตามและกระโดดอยู่ข้างเท้า เขาถือถุงผ้าผูกปลายไม้และดอกกุหลาบขาว มองขึ้นฟ้าโดยไม่ระวังทาง ตัวเลข 0 แทนศักยภาพที่ยังไม่ถูกกำหนดรูปแบบ ในไพ่มาร์เซย์ไพ่ใบนี้เรียก "อิลมัตโต" (คนบ้า) และมักไม่มีเลขกำกับ เรื่องราวของไพ่ใบใหญ่ทั้ง 22 ใบมักถูกเล่าเป็น "การเดินทางของเดอะฟูล" จากผู้เริ่มต้นไปจนถึงความสมบูรณ์',
+'ชายยกไม้กายสิทธิ์ขึ้นฟ้าและชี้มืออีกข้างลงพื้น สื่อถึงการนำพลังจากเบื้องบนมาสู่โลกจริง บนโต๊ะมีสัญลักษณ์ครบ 4 ชุด (ไม้เท้า ถ้วย ดาบ เหรียญ) แปลว่าเขามีเครื่องมือพร้อม เหนือศีรษะมีสัญลักษณ์อนันต์ และรอบตัวเป็นดอกกุหลาบแดงกับลิลลี่ขาว ในไพ่มาร์เซย์ไพ่ใบนี้ชื่อ "ลาบาเตอเลอร์" หมายถึงนักเล่นกลหรือพ่อค้าเร่',
+'หญิงนั่งหน้าเสาสองต้นสีดำและขาวที่มีอักษร B และ J อ้างอิงเสาโบอาสและยาคินในวิหารโซโลมอน เธอถือม้วนคัมภีร์เขียนว่า TORA ที่เปิดไม่หมด มีพระจันทร์เสี้ยวอยู่ที่เท้า และหลังม่านมีลูกทับทิมที่สื่อถึงความลับ ไพ่ในยุคแรกเรียกใบนี้ว่า "ลาปาเปสซา" (พระสันตะปาปาหญิง) ซึ่งเกี่ยวกับตำนานพระสันตะปาปาหญิงในยุคกลาง',
+'หญิงนั่งบนเบาะกลางทุ่งข้าวสาลีที่สุกงอม สวมมงกุฎดาว 12 ดวง ข้างกายมีโล่รูปสัญลักษณ์ดาวศุกร์ (เทพีแห่งความรัก) ฉากหลังเป็นป่าและน้ำตก สื่อถึงธรรมชาติที่ให้กำเนิดและหล่อเลี้ยงทุกสิ่ง',
+'ชายชรานั่งบนบัลลังก์หินที่มีหัวแกะ (ตรงกับราศีเมษที่เชื่อมกับดาวอังคาร) ถือไม้กางเขนอังค์และลูกโลก ใต้ผ้าคลุมแดงเป็นเกราะเหล็ก ฉากหลังเป็นภูเขาแห้งแล้ง สื่อถึงอำนาจที่สร้างจากวินัยและการปกครอง',
+'นักบวชสวมมงกุฎ 3 ชั้น ยกมืออวยพรอยู่ระหว่างเสาสองต้น มีพระสองรูปคุกเข่าและกุญแจไขว้สองดอกอยู่ที่เท้า ไพ่ในยุคแรกเรียกใบนี้ว่า "อิลปาปา" (พระสันตะปาปา) ต่อมาถูกเปลี่ยนเป็น Hierophant เพื่อไม่ให้ผูกกับศาสนาใดศาสนาหนึ่ง',
+'ชายหญิงเปลือยยืนต่อหน้าเทวทูตราฟาเอล ข้างหลังหญิงมีต้นไม้แห่งความรู้ที่มีงู ข้างหลังชายมีต้นไม้แห่งชีวิตที่มีเปลวไฟ 12 ดวง ภาพนี้อ้างเรื่องสวนเอเดน ในไพ่มาร์เซย์ภาพเดิมคือชายหนุ่มที่ต้องเลือกระหว่างหญิงสองคน ความหมาย "การเลือก" จึงมาจากตรงนี้',
+'ผู้ขับรถศึกสวมเกราะ มีดาวบนมงกุฎ และขับด้วยสฟิงซ์ขาวกับดำที่ไปคนละทิศ โดยไม่มีบังเหียน แปลว่าเขาควบคุมด้วยเจตจำนงไม่ใช่กำลัง รูปแบบมาจากขบวนแห่ชัยชนะของโรมัน ซึ่งเป็นที่มาของชื่อ "ทริออนฟี"',
+'หญิงในชุดขาวปิดปากสิงโตอย่างอ่อนโยน มีสัญลักษณ์อนันต์เหนือศีรษะ สื่อว่าความเข้มแข็งแท้คือความใจเย็น ไม่ใช่การข่มขู่ ในไพ่มาร์เซย์ใบนี้เป็นเลข 11 แต่ Golden Dawn สลับเลขกับ Justice ให้ตรงกับราศีสิงห์และตุลย์ Waite จึงใช้เลข 8',
+'ชายชราถือตะเกียงที่ในนั้นมีดาวหกแฉก และถือไม้เท้า ยืนบนยอดเขาหิมะ เป็นภาพนักปราชญ์ที่ถอยจากโลกเพื่อค้นหาความจริง และส่องแสงให้คนที่ตามมา',
+'วงล้อกลางท้องฟ้ามีอักษร TARO/ROTA และอักษรฮีบรูสี่ตัวแทนพระนามพระเจ้า บนยอดมีสฟิงซ์ ด้านล่างมีอนูบิส และงูสีแดงเทพไทฟอนตกลง มุมทั้งสี่มีสัตว์ 4 ตัว (มนุษย์ สิงโต วัว นกอินทรี) ถือหนังสือ ซึ่งอ้างมาจากนิมิตในคัมภีร์ไบเบิล สื่อว่าชีวิตหมุนเวียนขึ้นลงเป็นวัฏจักร',
+'หญิงนั่งบัลลังก์ ถือดาบตั้งตรงในมือหนึ่งและตราชั่งอีกมือหนึ่ง มีม่านสีม่วงอยู่ด้านหลัง เป็นภาพเทพีแห่งความยุติธรรมที่ใช้ทั้งเหตุผล (ดาบ) และความสมดุล (ตราชั่ง) ในไพ่มาร์เซย์เป็นเลข 8',
+'ชายถูกมัดข้อเท้าห้อยหัวกับต้นไม้รูปตัว T แต่สีหน้าสงบและมีรัศมีรอบศีรษะ ในยุคกลางของอิตาลีภาพห้อยหัวเป็นการประจานผู้ทรยศ แต่การตีความสมัยใหม่มองเป็นการยอมสละเพื่อได้มุมมองใหม่',
+'โครงกระดูกสวมเกราะดำขี่ม้าขาว ถือธงรูปกุหลาบขาว กษัตริย์ล้มลง นักบวชสวดอ้อนวอน ส่วนเด็กมองอย่างไม่กลัว ที่ขอบฟ้ามีดวงอาทิตย์ขึ้น ไพ่นี้แทนการสิ้นสุดและการเริ่มต้นใหม่ ไม่ได้ทำนายความตายจริง',
+'ทูตสวรรค์เทน้ำระหว่างถ้วยสองใบ โดยเท้าข้างหนึ่งอยู่บนน้ำและอีกข้างอยู่บนบก แปลว่าเชื่อมจิตใต้สำนึกกับสติ บนอกมีสามเหลี่ยมในสี่เหลี่ยม และมีดอกไอริสซึ่งชื่อมาจากเทพีสายรุ้งของกรีก สื่อถึงการผสมผสานให้พอดี',
+'ปีศาจครึ่งแพะมีปีกค้างคาวนั่งบนแท่น ชายหญิงเปลือยมีเขางอกและถูกล่ามโซ่ที่คอ แต่โซ่หลวมพอจะถอดออกได้ ภาพนี้เป็นการล้อภาพ The Lovers เพื่อสื่อว่าเรายอมถูกผูกมัดด้วยความอยากของตัวเอง',
+'ฟ้าผ่าลงยอดหอคอยจนมงกุฎหลุด มีคนสองคนตกลงมา และมีประกายไฟ 22 ดวง บางคนเชื่อมกับเรื่องหอคอยบาเบล สื่อว่าสิ่งที่สร้างบนฐานผิดจะพังลงเพื่อเปิดทางความจริง',
+'หญิงเปลือยคุกเข่าข้างสระ เทน้ำจากเหยือกสองใบลงบนดินและลงในสระ เหนือศีรษะมีดาวใหญ่ 8 แฉกล้อมด้วยดาวเล็ก 7 ดวง และมีนกไอบิสบนต้นไม้ เป็นภาพแห่งความหวังหลังผ่านพายุ',
+'พระจันทร์เต็มดวงที่มีใบหน้าส่องแสงเหนือสุนัขและหมาป่าที่หอนใส่ มีกุ้งน้ำจืดคลานขึ้นจากสระ และทางเดินที่ทอดผ่านหอสองหลังไปสู่ภูเขา สื่อถึงจิตใต้สำนึก ความกลัว และสิ่งที่มองไม่ชัดในความมืด',
+'ทารกเปลือยขี่ม้าขาวถือธงแดง ด้านหลังมีทานตะวัน 4 ดอกและกำแพงอิฐ ดวงอาทิตย์ยิ้มอยู่บนฟ้า เป็นไพ่ที่แสดงความสุข ความบริสุทธิ์ และความชัดเจน ต่างจากไพ่ใบก่อนหน้าที่เต็มไปด้วยความไม่แน่นอน',
+'ทูตสวรรค์กาเบรียลเป่าแตรที่มีธงกางเขน ผู้คนเปลือยลุกขึ้นจากโลงศพและกางแขนรับ ภาพนี้อ้างจากเรื่องวันพิพากษาครั้งสุดท้าย สื่อถึงการตื่นรู้ การเรียกร้อง และการเริ่มต้นใหม่หลังทบทวนอดีต',
+'หญิงเปลือยพันผ้าคลุมพลิ้วไหว ถือไม้กายสิทธิ์สองแท่ง อยู่ในพวงหรีดใบลอเรลรูปวงรี มุมทั้งสี่มีสัตว์สี่ชนิดเหมือนใน Wheel of Fortune เป็นไพ่ใบใหญ่ใบสุดท้าย สื่อถึงวัฏจักรที่สมบูรณ์'
+];
+;(window.__ok=window.__ok||[]).push(1);
+</script>
+<script>
+const T_SS={
+wands:'ชุดไม้เท้า: สัญลักษณ์มาจากไม้กระบองในไพ่อิตาลี (และไม้โปโลของไพ่มัมลุก) ใน Rider-Waite ไม้เท้ามักงอกใบอ่อนสีเขียว หมายถึงพลังชีวิต ไฟ และความริเริ่ม ฉากหลังมักเป็นทะเลทราย ปราสาท หรือภูเขา สื่อถึงเส้นทางของการกระทำ',
+cups:'ชุดถ้วย: มาจากถ้วยในไพ่อิตาลี และมักเชื่อมกับจอกศักดิ์สิทธิ์ ฉากมักมีน้ำ แม่น้ำ หรือทะเล เพราะเป็นธาตุน้ำ ซึ่งสื่อถึงอารมณ์ ความสัมพันธ์ และจิตใต้สำนึก',
+swords:'ชุดดาบ: มาจากดาบในไพ่อิตาลี (คล้ายโพดำในไพ่ปัจจุบัน) ภาพมักมีท้องฟ้าหม่น ลมแรง และความตึงเครียด เพราะเป็นธาตุลม ซึ่งสื่อถึงความคิด คำพูด ความขัดแย้ง และการตัดสินใจ',
+pentacles:'ชุดเหรียญ: มาจากเหรียญในไพ่อิตาลี (คล้ายข้าวหลามตัดในไพ่ปัจจุบัน) ใน Rider-Waite เป็นเหรียญที่มีดาวห้าแฉก ฉากมักเป็นสวนองุ่น บ้าน ตลาด หรืองานฝีมือ เพราะเป็นธาตุดิน ซึ่งสื่อถึงเงิน งาน ร่างกาย และความมั่นคง'};
+const T_RS=[
+'เอซ: ในไพ่ Rider-Waite เป็นมือที่ยื่นออกมาจากเมฆถือสัญลักษณ์ของชุด หมายถึงของขวัญหรือโอกาสที่ได้รับจากฟ้า เป็นพลังบริสุทธิ์ที่ยังไม่ถูกใช้',
+'เลข 2: เป็นภาพคนสองคนหรือคนหนึ่งคนที่ต้องชั่งใจระหว่างสองทาง หมายถึงการเลือก ความสมดุล หรือคู่ตรงข้ามที่ต้องประสานกัน',
+'เลข 3: มักเป็นภาพคนสามคนหรือการผลิดอกออกผลครั้งแรก หมายถึงการเติบโต ความร่วมมือ และผลลัพธ์ที่เริ่มเห็น',
+'เลข 4: ภาพมักนิ่ง เช่น คนนั่งพักหรืออยู่หลังกำแพง หมายถึงความมั่นคง รากฐาน หรือการหยุดนิ่งที่ยึดติดเกินไป',
+'เลข 5: มักเป็นภาพความขัดแย้ง ความสูญเสีย หรือความเหนื่อยยาก ซึ่งเป็นเลขแห่งความท้าทายที่ทำให้สมดุลเดิมสั่นคลอน',
+'เลข 6: เป็นภาพหลังพ้นวิกฤต เช่น การแบ่งปัน การช่วยเหลือ หรือชัยชนะ หมายถึงความคลี่คลาย ความกลมกลืน',
+'เลข 7: ภาพมักเป็นคนที่หยุดประเมินสถานการณ์หรือป้องกันตัว หมายถึงการทดสอบ ความอดทน และการตัดสินใจว่าจะไปต่ออย่างไร',
+'เลข 8: ภาพมักเป็นคนที่ทำงานหนักหรือเคลื่อนไหวเร็ว หมายถึงการเปลี่ยนแปลง การฝึกฝน และความก้าวหน้า',
+'เลข 9: ภาพมักเป็นคนที่ใกล้ถึงเป้าหมายหรือเป็นผู้พิทักษ์สิ่งที่สร้างมา หมายถึงความสำเร็จเกือบเต็ม พร้อมกับความกังวลสุดท้าย',
+'เลข 10: เป็นภาพปลายทางของวัฏจักรชุดนั้น อาจเป็นความสมบูรณ์หรือภาระที่หนักเกินไป เพราะเลข 10 คือการจบและกลับไปเริ่มที่เอซใหม่',
+'เพจ: เยาวชนหรือผู้เริ่มต้นที่ถือสัญลักษณ์ของชุดอยู่ มักหมายถึงข่าวสาร ความอยากรู้ หรือบทเรียนแรกของชุดนั้น',
+'ไนต์: อัศวินขี่ม้า ทิศทางและท่าทางของม้าบอกนิสัย เช่น ควบเร็วหรือเดินช้า หมายถึงการลงมือทำ การเคลื่อนที่ และผู้ที่ยึดถือเส้นทางของชุดนี้จนสุดทาง',
+'ควีน: ราชินีนั่งบัลลังก์ มองเข้าด้านในหรือถือสัญลักษณ์อย่างใส่ใจ หมายถึงผู้ที่เชี่ยวชาญพลังของชุดนี้จากภายใน คือการดูแล การหยั่งรู้ และความเข้าใจ',
+'คิง: กษัตริย์นั่งบัลลังก์อย่างมั่นคง หมายถึงผู้ที่ควบคุมและเชี่ยวชาญพลังของชุดนี้จากภายนอก คือการนำ การตัดสินใจ และอำนาจอย่างมีวุฒิภาวะ'];
+
+let T_IMGS={};
+function tImgUrl(c){
+  const key=c.t==='major'?'m'+String(c.no).padStart(2,'0'):c.t+String(c.no).padStart(2,'0');
+  const id=T_IMGS[key];
+  return id?'https:\/\/drive.google.com/thumbnail?id='+id+'&sz=w500':'';
+}
+function tImg(c,rev){
+  const u=tImgUrl(c);
+  return u?`<img class="timg ${rev?'rev':''}" loading="lazy" alt="${esc(c.en)}" src="${u}" onerror="this.style.display='none'">`:'';
+}
+
+function tStory(c){
+  const p=c.t==='major'?[T_STORY[c.no]]:[T_RS[c.no-1],T_SS[c.t]];
+  return p.map(x=>`<div style="margin-top:4px">${esc(x)}</div>`).join('');
+}
+function tCard(c){
+  const r=(l,x)=>x?`<div class="sm" style="margin-top:4px"><b>${l}</b> ${esc(x)}</div>`:'';
+  return `<details class="card" style="padding:.6rem .9rem"><summary style="cursor:pointer"><b>${esc(c.en)}</b> <span class="sm">${c.t==='major'?esc(c.th):''} · ${c.t==='major'?'Major':'Minor'}</span><div class="sm">↑ ${esc(c.up)}</div></summary>
+    <div class="sm" style="margin-top:6px">${esc(c.meta)}</div>${tImg(c)}${c.suit?r('ความหมายของชุด:',c.suit):''}
+    ${r('↑ ไพ่หงาย:',c.up)}${r('↓ ไพ่คว่ำ:',c.rev)}${r('❤️ ความรัก:',c.love)}${r('💼 งาน/การเงิน:',c.work)}
+    <div style="margin-top:10px;font-size:13px;line-height:1.7"><b>📜 ภาพในไพ่ เรื่องราว และที่มา</b>${tStory(c)}</div></details>`;
+}
+function tList(){
+  const q=T.q.trim().toLowerCase();
+  const l=TAROT.filter(c=>(T.f==='all'||c.t===T.f)&&(!q||(c.th+c.en+c.up+c.rev).toLowerCase().includes(q)));
+  const hist=`<details class="card" style="padding:.6rem .9rem"><summary style="cursor:pointer"><b>📚 ประวัติศาสตร์ของไพ่ทาโรต์</b></summary><div style="font-size:13px;line-height:1.7">${T_HIST.map(x=>`<div style="margin-top:6px">${esc(x)}</div>`).join('')}</div></details>`;
+  return hist+`<div class="sm" style="margin-bottom:6px">พบ ${l.length} ใบ</div>`+(l.map(tCard).join('')||'<div class="sm">ไม่พบไพ่</div>');
+}
+
+function drawTarot(){const e=$('tlist');if(e)e.innerHTML=tList();}
+function tarotLib(){
+  const F=[['all','ทั้งหมด (78)'],['major','ไพ่ใบใหญ่ (22)'],['wands','ไม้เท้า'],['cups','ถ้วย'],['swords','ดาบ'],['pentacles','เหรียญ']];
+  return `<div class="row"><input class="inp" style="flex:2;min-width:150px" placeholder="ค้นหาชื่อไพ่/คำสำคัญ" value="${esc(T.q)}" oninput="T.q=this.value;drawTarot()">
+    <select class="sel" onchange="T.f=this.value;drawTarot()">${F.map(f=>`<option value="${f[0]}" ${T.f===f[0]?'selected':''}>${f[1]}</option>`).join('')}</select></div>
+    <div id="tlist">${tList()}</div><div class="sm">ความหมายเป็นแนวทางทั่วไป แต่ละสำนักตีความต่างกัน</div>`;
+}
+
+(function(){const s=document.createElement('style');s.textContent=`
+.tgrid{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:.6rem 0}
+.tb{width:40px;height:62px;border-radius:6px;border:1px solid #3a3f5a;padding:0;cursor:pointer;color:#7c6aff;font-size:16px;
+background:repeating-linear-gradient(45deg,#1c2030,#1c2030 4px,#252a48 4px,#252a48 8px)}
+.tb.on{border-color:var(--a);box-shadow:0 0 0 2px var(--a);color:var(--a);font-weight:700;font-size:14px}
+.rcard.rev{border-left-color:var(--w)}
+.kw{display:inline-block;padding:1px 10px;margin:2px 4px 2px 0;border-radius:99px;background:rgba(149,136,247,.14);border:1px solid rgba(149,136,247,.28);color:#d6d9ea;font-size:12px}
+.rp{margin:6px 0;line-height:1.75}`;document.head.appendChild(s);})();
+
+const R={sub:'read',mode:'free',step:'form',d:1,m:0,y:2540,n:3,topics:[0],vr:0,deck:[],pick:[],out:null};
+const R_EL={wands:'ไฟ',cups:'น้ำ',swords:'ลม',pentacles:'ดิน'};
+const R_SU={wands:'ไม้เท้า',cups:'ถ้วย',swords:'ดาบ',pentacles:'เหรียญ'};
+const R_TOP=['ความรัก','การงานและอาชีพ','การเงิน','ภาพรวมชีวิตและดวงรายเดือน/รายปี','การตัดสินใจ','เรื่องในใจและการพัฒนาตัวเอง','สุขภาพ ครอบครัว และการเรียน'];
+const R_TW=['ความรักและความสัมพันธ์','งานและอาชีพ','เงินและการเงิน','ภาพรวมชีวิต','การตัดสินใจ','ความรู้สึกภายในและการพัฒนาตัวเอง','สุขภาพ ครอบครัว และการเรียน'];
+const R_REL=[['cups'],['wands','pentacles'],['pentacles'],[],['swords'],['cups','swords'],['pentacles','cups','swords']];
+const R_NUM={1:'การเริ่มต้น',2:'การเลือก/สมดุล',3:'การเติบโต/ร่วมมือ',4:'ความมั่นคง/หยุดนิ่ง',5:'ความท้าทาย/ขัดแย้ง',6:'การคลี่คลาย/แบ่งปัน',7:'การประเมิน/ป้องกัน',8:'การเคลื่อนไหว/ฝึกฝน',9:'ใกล้ถึงเป้าหมาย',10:'การจบวัฏจักร'};
+const R_ZN=['มังกร (Capricorn)','กุมภ์ (Aquarius)','มีน (Pisces)','เมษ (Aries)','พฤษภ (Taurus)','เมถุน (Gemini)','กรกฎ (Cancer)','สิงห์ (Leo)','กันย์ (Virgo)','ตุลย์ (Libra)','พิจิก (Scorpio)','ธนู (Sagittarius)'];
+const R_ZS=[20,19,21,20,21,21,23,23,23,23,22,22];
+
+const R_FR=[
+ ['สิ่งที่ขวางอยู่คือเรื่อง "{t}" ควรเผชิญหน้าและจัดการตรง ๆ','อุปสรรคนี้ฝังอยู่ภายในหรือกำลังคลี่คลาย คือเรื่อง "{t}" ลองสำรวจว่าอะไรกดคุณไว้'],
+ ['แนวทางที่ไพ่แนะนำคือ "{t}" ลงมือทำตามนี้ได้','ไพ่เตือนให้ระวังด้านตรงข้าม คือ "{t}" ควรปรับท่าทีก่อนเดินหน้า'],
+ ['สิ่งที่เกิดขึ้นแล้วและยังส่งผลอยู่คือ "{t}"','อดีตที่ยังค้างคาหรือไม่ได้รับการเยียวยา คือ "{t}"'],
+ ['แนวโน้มที่กำลังมาคือ "{t}"','แนวโน้มมีความติดขัดหรือล่าช้า คือ "{t}" แต่ยังปรับได้ด้วยการกระทำของคุณ'],
+ ['พลังงานที่กำลังทำงานอยู่คือ "{t}"','พลังงานนี้ติดขัดหรือแสดงออกไม่เต็มที่ คือ "{t}"']];
+const rRole=(n,k)=>k===12?3:/อุปสรรค|ไขว้/.test(n)?0:/คำแนะนำ/.test(n)?1:/อดีต|รากฐาน/.test(n)?2:/อนาคต|ผลลัพธ์|แนวโน้ม|กำลัง/.test(n)?3:4;
+const rMatch=(c,t)=>!R_REL[t].length||R_REL[t].includes(c.t);
+
+function rPos(){
+  const n=R.n,love=R.topics.includes(0),P=s=>s.split(',').map(x=>x.split(':'));
+  if(n===1)return P('ข้อความของไพ่:พลังงานหลักที่ส่งผลต่อเรื่องนี้ตอนนี้');
+  if(n===3)return R.vr?P('สถานการณ์:สิ่งที่เป็นอยู่จริงตอนนี้,อุปสรรค:สิ่งที่ขวางหรือควรระวัง,คำแนะนำ:แนวทางที่ควรทำ')
+    :P('อดีต:รากเหง้าที่ส่งผลมาถึงปัจจุบัน,ปัจจุบัน:สถานการณ์ตอนนี้,อนาคต:แนวโน้มหากเป็นไปตามเดิม');
+  if(n===5)return P('สถานการณ์ปัจจุบัน:ภาพรวมของเรื่องนี้,อุปสรรค:สิ่งที่ท้าทายหรือขวางอยู่,รากฐาน:อดีตหรือสาเหตุเบื้องหลัง,สิ่งที่กำลังเข้ามา:พลังงานที่ใกล้จะมาถึง,ผลลัพธ์:แนวโน้มปลายทาง');
+  if(n===7)return love?P('ตัวคุณ:ท่าทีและความรู้สึกของคุณ,อีกฝ่าย:ท่าทีและความรู้สึกของอีกฝ่าย,พื้นฐานความสัมพันธ์:สิ่งที่ยึดเหนี่ยวอยู่,จุดแข็ง:สิ่งที่เกื้อหนุนกัน,อุปสรรค:สิ่งที่ทำให้ติดขัด,คำแนะนำ:แนวทางที่ควรทำ,แนวโน้ม:ทิศทางที่ไปต่อ')
+    :P('อดีต:สิ่งที่ผ่านมา,ปัจจุบัน:สถานการณ์ตอนนี้,สิ่งที่ซ่อนอยู่:ปัจจัยที่มองไม่เห็น,ตัวคุณ:ท่าทีของคุณ,คนรอบข้าง:สิ่งแวดล้อมและผู้คน,คำแนะนำ:แนวทางที่ควรทำ,ผลลัพธ์:แนวโน้มปลายทาง');
+  if(n===10)return P('1 ปัจจุบัน:แก่นของสถานการณ์,2 ไพ่ไขว้ (อุปสรรค):สิ่งที่มาขวางหรือท้าทาย,3 รากฐาน:สาเหตุลึก ๆ ในใจ,4 อดีตที่เพิ่งผ่าน:สิ่งที่กำลังจะจากไป,5 เป้าหมาย:สิ่งที่คุณต้องการหรือศักยภาพสูงสุด,6 อนาคตอันใกล้:สิ่งที่กำลังจะเกิด,7 ตัวคุณ:ท่าทีของคุณต่อเรื่องนี้,8 สิ่งแวดล้อม:อิทธิพลจากคนรอบข้าง,9 ความหวังและความกลัว:สิ่งที่อยู่ในใจ,10 ผลลัพธ์:แนวโน้มปลายทาง');
+  const m0=new Date().getMonth();
+  return Array.from({length:12},(_,i)=>[MONTHS[(m0+i)%12],'พลังงานหลักของเดือนนี้']);
+}
+;(window.__ok=window.__ok||[]).push(2);
+</script>
+<script>
+function rZodiac(d,m){const i=d>=R_ZS[m]?(m+1)%12:m;return{name:R_ZN[i],el:['ดิน','ลม','น้ำ','ไฟ'][i%4]};}
+function rReduce(n){while(n>22)n=String(n).split('').reduce((a,b)=>a+ +b,0);return n===22?0:n;}
+function rBirthCards(){
+  const ce=R.y-543,cy=new Date().getFullYear(),sum=x=>String(x).split('').reduce((a,b)=>a+ +b,0);
+  return{birth:TAROT[rReduce(sum(R.d)+sum(R.m+1)+sum(ce))],year:TAROT[rReduce(sum(R.d)+sum(R.m+1)+sum(cy))],cy:cy+543};
+}
+function rText(c,rev,t){
+  if(rev)return c.rev;
+  if(c.t==='major'){if(t===0&&c.love)return c.love;if((t===1||t===2)&&c.work)return c.work;}
+  return c.up;
+}
+function rRel(a,b){if(a===b)return['เสริมแรงกันมาก','good'];
+  const s=[a,b].sort().join();
+  if(s==='ดิน,น้ำ'||s==='ลม,ไฟ')return['เกื้อหนุนกัน','good'];
+  if(s==='ไฟ,น้ำ'||s==='ดิน,ลม')return['ขัดแย้ง/หักล้างกัน','bad'];
+  return['เป็นกลาง ไม่เสริมไม่ลด',''];}
+
+/* ===== ฟังก์ชันขยายเนื้อหาการทำนายดวงแบบฟรีให้มีความยาวและรายละเอียดสูงสุด ===== */
+function getCardDeepMeaning(c, rev){
+  const name = c.en + (c.t==='major'? ' ('+c.th+')':'');
+  let coreMsg = '';
+  if(c.t === 'major'){
+    const majMsgs = [
+      'ความบริสุทธิ์ การเปิดใจรับสิ่งใหม่ การผจญภัยแบบไร้กรอบ และการกล้าก้าวออกจากพื้นที่ปลอดภัย',
+      'ศักยภาพที่พร้อมพรั่ง พลังแห่งการเนรมิต ทักษะการสื่อสาร และการลงมือทำด้วยความเชื่อมั่น',
+      'สัญชาตญาณความหยั่งรู้ ปัญญาภายใน ความลับที่ยังไม่เปิดเผย และการฟังเสียงเรียกร้องจากใจ',
+      'ความอุดมสมบูรณ์ ความรักแม่ เมตตาธรรม การเติบโตของโปรเจกต์ และความสุขทางกายภาพ',
+      'โครงสร้างความมั่นคง อำนาจการปกครอง ความเป็นผู้นำ วินัย และการวางระบบที่เข้มแข็ง',
+      'ครูบาอาจารย์ ประเพณี ระบบความเชื่อ ศีลธรรม ที่ปรึกษา และการทำตามขั้นตอนทางสังคม',
+      'ทางเลือกแห่งหัวใจ ความรักความเข้าใจที่ลึกซึ้ง พันธภาพ และการตัดสินใจตามคุณค่าที่แท้จริง',
+      'เจตจำนงที่แข็งแกร่ง ชัยชนะเหนืออุปสรรค การพุ่งเป้าไปข้างหน้า และการควบคุมอารมณ์',
+      'ความกล้าหาญที่ละมุนละม่อม การใช้ความอ่อนโยนสยบความเกรี้ยวกราด และความอดทนภายใน',
+      'การปลีกวิเวก การค้นหาความจริงภายในจิตใจ การทบทวนตัวเอง และแสงสว่างแห่งปัญญา',
+      'กงล้อแห่งชะตาชีวิต จังหวะเวลา จังหวะขึ้นลงของดวงชะตา และโอกาสกะทันหันที่เข้ามา',
+      'ความยุติธรรม เหตุและผล ความจริงที่ต้องยอมรับ ความซื่อตรง และสัจธรรมแห่งการกระทำ',
+      'การยอมปล่อยวาง การมองจากมุมกลับ การหยุดนิ่งเพื่อตื่นรู้ และการสละเพื่อสิ่งที่ยิ่งใหญ่กว่า',
+      'การจบสิ้นของวัฏจักรเก่า การสลัดทิ้งสิ่งที่หมดอายุ การเปิดทางให้บทใหม่ และการเปลี่ยนแปลงครั้งใหญ่',
+      'ความสมดุล การผสมผสานอย่างลงตัว ความพอดี สายกลาง และการเยียวยาอารมณ์',
+      'กิเลสความตื่นเต้น พันธนาการแห่งความหลง ความกังวลเรื่องวัตถุ และสิ่งมัวเมาที่ต้องหลุดพ้น',
+      'การพังทลายของสิ่งที่ไม่มั่นคง การตื่นรู้กะทันหัน ความจริงที่เปิดเผย และการเริ่มต้นฐานใหม่',
+      'ความหวัง แสงสว่างหลังพายุ ความตระหนักรู้ ความสงบทางใจ และแรงบันดาลใจอันสดใส',
+      'ความไม่แน่นอน ภาพลวงตา สัญชาตญาณในความมืด ความกังวลที่คิดไปเอง และสิ่งที่ยังซ่อนอยู่',
+      'ความสุข ความสำเร็จ ชัดเจน แจ่มแจ้ง พลังชีวิตที่เต็มเปี่ยม และความมั่นใจอันเปี่ยมล้น',
+      'การตื่นรู้ครั้งใหญ่ การเรียกขานของชะตาชีวิต การปลดล็อกอดีต และการตัดสินใจเลือกเส้นทางใหม่',
+      'ความสำเร็จสมบูรณ์ การจบภารกิจอย่างงดงาม ความลงตัว และการก้าวสู่มิติใหม่ของชีวิต'
+    ];
+    coreMsg = majMsgs[c.no] || c.up;
+  } else {
+    coreMsg = (rev ? c.rev : c.up) + (c.suit ? ' (' + c.suit + ')' : '');
+  }
+
+  if(rev){
+    return `ไพ่ <b>${esc(name)}</b> ในสภาวะ<b>ไพ่คว่ำ</b> บ่งบอกถึงพลังงานของไพ่ที่ถูกกดทับ ชะลอตัว หรือแสดงผลในมุมกลับ (${esc(coreMsg)}) ในเวลานี้คุณอาจรู้สึกว่ามีสิ่งอั้นอยู่ภายใน หรือกำลังเจอแรงต้านจากภายนอก เป็นสัญญาณเตือนให้หยุดทบทวน ชะลอความใจร้อน และแก้ไขปัญหารากฐานก่อนจะเดินหน้าต่อ`;
+  } else {
+    return `ไพ่ <b>${esc(name)}</b> ในสภาวะ<b>ไพ่หงาย</b> ส่งพลังงานบริสุทธิ์และชัดเจน (${esc(coreMsg)}) สถานการณ์ตรงหน้าเปิดกว้าง มีแนวโน้มที่พลังงานจะไหลลื่นตามธรรมชาติ เหมาะแก่การลงมือทำด้วยความเชื่อมั่นและการตั้งใจจริง`;
+  }
+}
+
+function getTopicDetail(c, rev, topicIdx){
+  const kw = rev ? c.rev : c.up;
+  const isMaj = c.t === 'major';
+  
+  if(topicIdx === 0){ // ความรัก
+    if(isMaj && c.love) return c.love + (rev ? ' (แต่ในสภาวะคว่ำ ควรระวังอารมณ์ชั่ววูบ การยึดติด หรือความไม่เข้าใจกัน)' : ' (พลังงานเปิดกว้าง เหมาะแก่การกระชับความสัมพันธ์)');
+    if(c.t === 'cups') return (rev ? 'ความรู้สึกอัดอั้น มีข้อขัดแย้งทางอารมณ์ หรือความคาดหวังที่ยังไม่ตรงกัน ควรเปิดใจคุยกันอย่างใจเย็น' : 'บรรยากาศอบอุ่น มีความเข้าใจ ไหลลื่นทางอารมณ์ และมีโอกาสกระชับความสัมพันธ์ให้ลึกซึ้งยิ่งขึ้น');
+    if(c.t === 'wands') return (rev ? 'ต่างฝ่ายต่างมีภารกิจวุ่นวาย จนอาจละเลยความรู้สึกของกันและกัน' : 'ความสัมพันธ์เต็มไปด้วยพลังงาน ความตื่นเต้น และการทำกิจกรรมร่วมกัน');
+    if(c.t === 'swords') return (rev ? 'ความระแวง คิดมาก หรือคำพูดที่ทิ่มแทงกัน ควรลดการเอาชนะด้วยเหตุผล' : 'เน้นการใช้สติและเหตุผลในการพูดคุย ละเว้นการใช้อารมณ์เข้าหากัน');
+    if(c.t === 'pentacles') return (rev ? 'กังวลเรื่องการสร้างอนาคต หรือปัจจัยด้านการเงินส่งผลต่อความสัมพันธ์' : 'ความสัมพันธ์มั่นคง เป็นเกื้อหนุนกันในชีวิตประจำวันและการสร้างฐานะ');
+    return rev ? 'ความสัมพันธ์ชะลอตัว ควรให้สเปซและทบทวนความรู้สึกตนเอง' : 'ความสัมพันธ์เดินหน้าไปในทิศทางที่ดี มีความสอดคล้องกัน';
+  }
+
+  if(topicIdx === 1){ // การงาน
+    if(isMaj && c.work) return c.work + (rev ? ' (ระวังความผิดพลาดจากความประมาท หรือระบบที่ไม่เป็นใจ)' : ' (จังหวะการงานโดดเด่น มีโอกาสก้าวหน้า)');
+    if(c.t === 'wands') return (rev ? 'เหน็ดเหนื่อยกับการแบกภาระ หรือโครงการล่าช้า ขาดแรงจูงใจในการทำงาน' : 'งานมีความก้าวหน้า มีไฟในการทำงาน โครงการใหม่ได้รับการตอบรับดี');
+    if(c.t === 'cups') return (rev ? 'บรรยากาศในที่ทำงานไม่อบอุ่นเท่าที่ควร หรือใช้อารมณ์ตัดสินงาน' : 'ทำงานด้วยความสุข มีความสัมพันธ์ที่ดีกับเพื่อนร่วมงานและลูกค้า');
+    if(c.t === 'swords') return (rev ? 'สับสนในเป้าหมาย เอกสารสัญญาติดขัด หรือมีความขัดแย้งในทีม' : 'ใช้วิเคราะห์และตัดสินใจได้อย่างเด็ดขาด แก้ปัญหาเฉพาะหน้าได้ดี');
+    if(c.t === 'pentacles') return (rev ? 'ผลงานยังไม่เห็นผลชัดเจน ต้องใช้ความอดทนรอนานกว่าที่คิด' : 'งานสร้างผลตอบแทนเป็นรูปธรรม ได้รับผลตอบแทนสมน้ำสมเนื้อ ความมั่นคงสูง');
+    return rev ? 'งานติดขัดชั่วคราว ควรตรวจสอบความถูกต้องอย่างรอบคอบ' : 'การงานมีแนวโน้มราบรื่น เดินหน้าตามแผนงานที่วางไว้';
+  }
+
+  if(topicIdx === 2){ // การเงิน
+    if(c.t === 'pentacles') return (rev ? 'ระวังหมุนเงินไม่ทัน มีรายจ่ายกะทันหัน หรือการลงทุนผิดจังหวะ' : 'สภาพคล่องการเงินดี มีรายรับเข้ามาตามเป้า การลงทุนเริ่มได้ผลตอบแทน');
+    if(c.t === 'swords') return (rev ? 'กังวลเรื่องหนี้สิน หรือมีค่าใช้จ่ายเกี่ยวกับเอกสาร คดีความ/ค่าปรับ' : 'ต้องวางแผนงบประมาณอย่างรัดกุม ตัดรายจ่ายที่ไม่จำเป็นออกไป');
+    if(c.t === 'cups') return (rev ? 'ใช้จ่ายตามอารมณ์ ซื้อความสุขจนเงินรั่วไหล' : 'การเงินคล่องตัว ได้รับการช่วยเหลือสนับสนุนจากคนใกล้ชิด');
+    if(c.t === 'wands') return (rev ? 'ลงทุนไปแล้วยังไม่ได้เงินคืนทันที ต้องออกแรงเพิ่มขึ้น' : 'มีโอกาสสร้างรายได้จากงานใหม่ๆ หรือธุรกิจขยายตัว');
+    return rev ? 'การเงินต้องระมัดระวังเป็นพิเศษ งดเว้นการเสี่ยงโชคเกินตัว' : 'สถานะการเงินมั่นคง บริหารจัดการได้ดี';
+  }
+
+  if(topicIdx === 3){ // ภาพรวมชีวิต
+    return rev ? 'ชีวิตอยู่ในช่วงปรับฐาน อาจมีเรื่องให้ต้องแก้ไขและเรียนรู้ เพื่อเตรียมพร้อมสำหรับการเติบโตระรอบใหม่' : 'ชีวิตอยู่ในจังหวะขาขึ้น พลังงานส่งเสริมให้กล้าคิดกล้าทำและเปิดรับโอกาสใหม่ๆ';
+  }
+
+  if(topicIdx === 4){ // การตัดสินใจ
+    return rev ? 'อย่าพึ่งรีบร้อนตัดสินใจในขณะที่ข้อมูลยังไม่ครบ หรืออารมณ์ยังไม่นิ่ง ควรชะลอเพื่อดูสถานการณ์ก่อน' : 'สถานการณ์เอื้ออำนวยให้ตัดสินใจได้ทันที ใช้เหตุผลและสัญชาตญาณควบคู่กันจะนำไปสู่ผลลัพธ์ที่ดี';
+  }
+
+  if(topicIdx === 5){ // การพัฒนาตัวเอง
+    return rev ? 'ยอมรับจุดอ่อนของตนเอง เรียนรู้จากข้อผิดพลาดในอดีต และปลดล็อกความกลัวที่ซ่อนอยู่ในใจ' : 'มุ่งมั่นพัฒนาทักษะใหม่ๆ ดึงศักยภาพภายในออกมาใช้อย่างเต็มที่ เพิ่มความเชื่อมั่นในตนเอง';
+  }
+
+  if(topicIdx === 6){ // สุขภาพ ครอบครัว การเรียน
+    return rev ? 'ระวังสุขภาพผันผวนจากความเครียดหรือพักผ่อนไม่เพียงพอ ในครอบครัวควรเว้นวรรคเพื่อฟังกันมากขึ้น' : 'สุขภาพกายและใจสมบูรณ์ บรรยากาศในครอบครัวและการเรียนเป็นไปอย่างราบรื่นมีความสุข';
+  }
+
+  return kw;
+}
+
+function getCardDosAndDonts(c, rev){
+  if(rev){
+    return {
+      dos: [
+        'หยุดทบทวนและตรวจสอบรายละเอียดรอบคอบก่อนลงมือทำ',
+        'เปิดใจยอมรับความจริง และรับฟังความคิดเห็นหรือคำแนะนำจากผู้อื่น',
+        'เน้นการเยียวยาจิตใจ พักผ่อนเพื่อฟื้นฟูพลังงาน และปล่อยวางสิ่งที่ควบคุมไม่ได้'
+      ],
+      donts: [
+        'อย่าดันทุรังฝืนทำในสิ่งที่ยังติดขัดหรือขาดความพร้อม',
+        'ระวังการใช้อารมณ์ชั่ววูบ หรือการใช้คำพูดรุนแรงซ้ำเติมสถานการณ์',
+        'อย่าปล่อยให้ความวิตกกังวลหรืออดีตมาบดบังการตัดสินใจ'
+      ]
+    };
+  } else {
+    return {
+      dos: [
+        'มุ่งมั่นลงมือทำตามแผนงานด้วยความเชื่อมั่นและกล้าหาญ',
+        'เปิดรับโอกาสใหม่ๆ คว้าจังหวะที่ดี และกระตือรือร้นกับเป้าหมาย',
+        'สื่อสารและสร้างความสัมพันธ์กับผู้คนด้วยความจริงใจและสุจริต'
+      ],
+      donts: [
+        'อย่าลังเลหรือรอช้าจนเสียโอกาสดีๆ ที่เข้ามาในชีวิต',
+        'อย่าประมาทหรือละเลยรายละเอียดเล็กๆ น้อยๆ ที่อาจสร้างปัญหาภายหลัง',
+        'อย่าปล่อยให้ความกลัวหรือการคิดมากเกินไปมาฉุดรั้งความก้าวหน้า'
+      ]
+    };
+  }
+}
+
+function buildFreeSummary(cs, P, T, z, bc, n){
+  const maj = cs.filter(x=>x.c.t==='major').length;
+  const rv = cs.filter(x=>x.rev).length;
+  const mi = cs.filter(x=>x.c.t!=='major');
+  
+  let structHtml = `<b>1.1 สัดส่วนอิทธิพลของชะตาชีวิต (Major Arcana):</b><br>`;
+  if(maj / n >= 0.4){
+    structHtml += `มีไพ่ชุดใหญ่ปรากฏถึง <b>${maj} จาก ${n} ใบ (${Math.round(maj/n*100)}%)</b> ซึ่งถือว่าเป็นสัดส่วนที่สูงมาก! บ่งบอกว่าสถานการณ์ที่คุณกำลังถามถึงนี้เป็น<b>จุดเปลี่ยนสำคัญของชีวิต (Life Milestone)</b> หรือเป็นเรื่องราวที่มีปัจจัยเรื่องชะตาลิขิตเข้ามาเกี่ยวข้อง ไม่ใช่เรื่องเล็กน้อยประจำวัน คุณต้องใช้สติ สัจจะ และปัญญาในการก้าวผ่าน`;
+  } else if(maj === 0){
+    structHtml += `ในสำรับนี้<b>ไม่มีไพ่ชุดใหญ่ปรากฏเลย (0%)</b> สื่อว่าเรื่องราวทั้งหมดอยู่ใน<b>ขอบเขตการควบคุมและการตัดสินใจของคุณ 100%</b> เป็นเรื่องทางกายภาพและการบริหารจัดการประจำวัน คุณมีอิสระเต็มที่ในการกำหนดทิศทางด้วยตนเอง`;
+  } else {
+    structHtml += `มีไพ่ชุดใหญ่ปรากฏ <b>${maj} จาก ${n} ใบ</b> สื่อถึงความผสมผสานระหว่างปัจจัยภายนอกที่คุณต้องปรับตัวเข้าหา กับทางเลือกส่วนตัวที่คุณสามารถควบคุมได้อย่างสมดุล`;
+  }
+
+  structHtml += `<br><br><b>1.2 สภาวะการไหลของพลังงาน (Upright vs Reversed):</b><br>`;
+  if(rv / n >= 0.6){
+    structHtml += `พบไพ่คว่ำถึง <b>${rv} จาก ${n} ใบ (${Math.round(rv/n*100)}%)</b> สื่อว่าสภาวะจิตใจหรือสถานการณ์ในขณะนี้มี<b>ความติดขัด ชะลอตัว หรือเป็นการเปลี่ยนแปลงที่เน้นการทำงานภายในจิตใจ (Internal Work)</b> สิ่งที่คุณคาดหวังภายนอกอาจล่าช้ากว่ากำหนด แนะนำให้ชะลอความใจร้อนและกลับมาแก้ไขปัญหารากฐานก่อน`;
+  } else if(rv === 0){
+    structHtml += `ไพ่ทั้งหมดอยู่ในสภาวะ<b>หงาย 100%</b> สื่อว่าพลังงานกำลัง<b>ไหลไปข้างหน้าอย่างเปิดเผย เคลื่อนไหว และชัดเจน</b> สิ่งที่คุณคิดและลงมือทำจะได้รับการตอบรับที่ตรงไปตรงมา ไม่มีอุปสรรคซ่อนเร้น`;
+  } else {
+    structHtml += `มีทั้งไพ่หงาย (${n-rv} ใบ) และไพ่คว่ำ (${rv} ใบ) ผสมผสานกัน สื่อถึงจังหวะชีวิตที่มีทั้งส่วนที่เดินหน้าได้อย่างราบรื่น และส่วนที่ยังต้องปรับจูนแก้ไขควบคู่กันไป`;
+  }
+
+  const sc = {};
+  mi.forEach(x => sc[x.c.t] = (sc[x.c.t] || 0) + 1);
+  const topSuit = Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0];
+  
+  structHtml += `<br><br><b>1.3 สมดุลธาตุประจำสำรับ (Elemental Balance):</b><br>`;
+  if(topSuit && sc[topSuit] >= 2){
+    const suitObj = T_SUITS.find(s=>s.k===topSuit);
+    structHtml += `ธาตุที่โดดเด่นที่สุดในไพ่ชุดนี้คือ <b>ชุด${R_SU[topSuit]} (ธาตุ${R_EL[topSuit]})</b> จำนวน ${sc[topSuit]} ใบ — เน้นหนักในเรื่อง<b>${suitObj?suitObj.d:''}</b>`;
+    if(R_EL[topSuit] === z.el){
+      structHtml += `<br>✨ <i>ข้อสังเกตพิเศษ:</i> ธาตุหลักของไพ่ตรงกับธาตุประจำราศีเกิดของคุณ (ราศี${z.name} - ธาตุ${z.el}) ทำให้คุณมีความคุ้นเคยและรับมือกับสภาวะนี้ได้อย่างเป็นธรรมชาติ`;
+    }
+  } else {
+    structHtml += `พลังงานธาตุทั้งสี่ (ไฟ, น้ำ, ลม, ดิน) กระจายตัวอย่างสมดุล สื่อถึงสถานการณ์ที่มีหลายมิติประกอบกัน ทั้งการลงมือทำ อารมณ์ ความคิด และเรื่องการเงิน`;
+  }
+
+  const topicHtml = T.map(t => {
+    const rl = cs.map((x,i)=>({x,i})).filter(o => o.x.c.t === 'major' || rMatch(o.x.c, t));
+    const up = rl.filter(o => !o.x.rev).length;
+    const dn = rl.length - up;
+    
+    let analysisText = '';
+    if(!rl.length){
+      analysisText = 'ไม่มีไพ่ที่ตรงกับหมวดนี้โดยตรง ให้พิจารณาจากภาพรวมของสำรับและไพ่ที่ให้คำแนะนำในตำแหน่งสุดท้าย';
+    } else if(up > dn){
+      analysisText = `ไพ่ที่เกี่ยวข้องส่วนใหญ่เป็น<b>ไพ่หงาย (${up}/${rl.length} ใบ)</b> แนวโน้มในเรื่องนี้เปิดกว้าง มีโอกาสสำเร็จและเติบโตสูง ให้ลุยทำตามแผนด้วยความมั่นใจ`;
+    } else if(dn > up){
+      analysisText = `ไพ่ที่เกี่ยวข้องส่วนใหญ่เป็น<b>ไพ่คว่ำ (${dn}/${rl.length} ใบ)</b> มีสัญญาณเตือนถึงความติดขัดหรือชะลอตัว ควรตรวจสอบรายละเอียด ระวังความประมาท และหลีกเลี่ยงการตัดสินใจด้วยอารมณ์`;
+    } else {
+      analysisText = `พลังงานไพ่หงายและคว่ำมีสัดส่วนเท่ากัน มีทั้งโอกาสและข้อควรระวังขนานคู่กันไป ต้องใช้ความรอบคอบและความอดทนสูง`;
+    }
+
+    const cardNames = rl.map(o => `<b>${esc(o.x.c.en)}</b> (${o.x.rev?'คว่ำ':'หงาย'})`).join(', ');
+
+    return `<div class="rp" style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:8px">
+      <b>🧭 ด้าน${esc(R_TOP[t])}:</b><br>
+      <span class="sm">ไพ่ที่ส่งผลโดยตรง: ${cardNames || '—'}</span><br>
+      ${analysisText}<br>
+      <div style="margin-top:4px;font-size:13px;color:var(--t)">💡 <b>แนวทางรับมือ:</b> ${getTopicDetail(rl[0]?rl[0].x.c:cs[0].c, rl[0]?rl[0].x.rev:cs[0].rev, t)}</div>
+    </div>`;
+  }).join('');
+
+  const finalOutcomeCard = cs[n-1];
+  const outcomeText = finalOutcomeCard ? `ไพ่ตำแหน่งปลายทางคือ <b>${esc(finalOutcomeCard.c.en)}</b> (${finalOutcomeCard.rev?'คว่ำ':'หงาย'}) — ${rText(finalOutcomeCard.c, finalOutcomeCard.rev, T[0])}` : '';
+
+  return { structHtml, topicHtml, outcomeText };
+}
+
+/* ---------- Views ---------- */
+function tarotView(){
+  return `<div class="tabs">${[['read','🔮 ทำนายดวง'],['lib','📖 คลังไพ่ 78 ใบ']].map(t=>`<div class="tab ${R.sub==t[0]?'on':''}" onclick="R.sub='${t[0]}';render()">${t[1]}</div>`).join('')}</div>`+(R.sub==='lib'?tarotLib():rView());
+}
+function rTog(i){const k=R.topics.indexOf(i);if(k>=0){if(R.topics.length>1)R.topics.splice(k,1);}else R.topics.push(i);R.topics.sort((a,b)=>a-b);render();}
+function rView(){
+  if(R.step==='pick')return rPickView();
+  if(R.step==='result')return rResult();
+  const yr=[];for(let y=2569;y>=2440;y--)yr.push([y,y]);
+  const op=(a,s)=>a.map(x=>`<option value="${x[0]}" ${s==x[0]?'selected':''}>${x[1]}</option>`).join('');
+  const SP=[[1,'1 ใบ — คำถามสั้น ๆ / พลังงานประจำวัน'],[3,'3 ใบ — อดีต-ปัจจุบัน-อนาคต / สถานการณ์-อุปสรรค-คำแนะนำ'],[5,'5 ใบ — ภาพรวมแบบละเอียดขึ้น'],[7,'7 ใบ — ความรัก/ความสัมพันธ์ (หรือ Horseshoe)'],[10,'10 ใบ — Celtic Cross เชิงลึก'],[12,'12 ใบ — รายเดือนตลอดปี']];
+  const canAI=!!(S.pw||(S.acct&&S.acct.role==='user'));
+  return `<div class="card"><b>🔮 ทำนายดวงด้วยไพ่ยิปซี</b>
+  <div class="sm" style="margin:.5rem 0 .3rem">1) วัน เดือน ปีเกิด (พ.ศ.)</div>
+  <div class="row"><select class="sel" onchange="R.d=+this.value">${op(Array.from({length:31},(_,i)=>[i+1,i+1]),R.d)}</select><select class="sel" onchange="R.m=+this.value">${op(MONTHS.map((m,i)=>[i,m]),R.m)}</select><select class="sel" onchange="R.y=+this.value">${op(yr,R.y)}</select></div>
+  <div class="sm" style="margin:.2rem 0 .3rem">2) จำนวนไพ่ที่จะอ่าน</div>
+  <select class="sel" onchange="R.n=+this.value;render()">${op(SP,R.n)}</select>
+  ${R.n===3?`<select class="sel" onchange="R.vr=+this.value"><option value="0" ${R.vr?'':'selected'}>อดีต - ปัจจุบัน - อนาคต</option><option value="1" ${R.vr?'selected':''}>สถานการณ์ - อุปสรรค - คำแนะนำ</option></select>`:''}
+  <div class="sm" style="margin:.2rem 0 .3rem">3) เรื่องที่อยากรู้ (เลือกได้หลายเรื่อง)</div>
+  <div class="tabs">${R_TOP.map((t,i)=>`<div class="tab ${R.topics.includes(i)?'on':''}" onclick="rTog(${i})">${R.topics.includes(i)?'✓ ':''}${esc(t)}</div>`).join('')}</div>
+    <div class="sm" style="margin:.2rem 0 .3rem">4) รูปแบบคำทำนาย</div>
+  <div class="tabs">
+    <div class="tab ${R.mode!=='ai'?'on':''}" onclick="R.mode='free';render()">🌐 ดูฟรี (คำอ่านแบบขยายความ)</div>
+    <div class="tab ${R.mode==='ai'?'on':''}" onclick="R.mode='ai';render()">${canAI?'🤖':'🔒'} AI ละเอียด (ใช้ 1 Token)</div>
+  </div>
+  ${R.mode==='ai'?(canAI
+    ?`<div class="sm">${S.pw?'✅ Admin ใช้ได้ฟรี':'🪙 Token คงเหลือ '+S.acct.tokens+' · จะหัก 1 Token ตอนเปิดไพ่ (คืนให้ถ้า AI ทำนายไม่สำเร็จ)'}</div>`
+    :`<div class="sm">🔒 ต้องเข้าสู่ระบบด้วยบัญชี User ที่แท็บ Thai Lottery Analyzer ก่อน และมี Token อย่างน้อย 1 · หรือเลือก "ดูฟรี"</div>`):''}
+  <div class="err" id="rmsg"></div>
+  <button class="btn g" onclick="rStart()">${R.mode==='ai'?'🤖 ทำนายด้วย AI (ใช้ 1 Token)':'🔮 ทำนายดวง (ฟรี)'}</button>
+  <button class="btn" onclick="R.mode='ai';rStart(true)">🔮🧠 ดูไพ่ + MBTI (ใช้ 1 Token)</button>
+  <button class="btn" onclick="R.mode='ai';rStart(true,true)">🔮🧠🌌 ไพ่ + MBTI + Birth Chart (ใช้ 1 Token)</button>
+  <button class="btn" onclick="R.mode='ai';rStart(false,true)">🔮🌌 ไพ่ + Birth Chart (ใช้ 1 Token)</button></div>`;
+}
+function rStart(withMbti,withChart){
+  R.mbtiOn=!!withMbti;R.chartOn=!!withChart;
+  const dt=new Date(R.y-543,R.m,R.d);
+  if(dt.getDate()!==R.d||dt.getMonth()!==R.m){$('rmsg').textContent='วันเกิดไม่ถูกต้อง (เช่น 31 กุมภาพันธ์)';return;}
+  if(withChart&&!B.res){$('rmsg').textContent='🌌 โปรดสร้างดวงกำเนิดที่แท็บ Birth Chart ก่อน · ยังไม่ได้หัก Token';return;}
+  if(R.mode==='ai'){
+    if(!(S.pw||(S.acct&&S.acct.role==='user'))){$('rmsg').textContent='🔒 ต้องเข้าสู่ระบบด้วยบัญชี User ก่อน หรือเลือกโหมดดูฟรี';return;}
+    if(!S.pw&&S.acct.tokens<1){$('rmsg').textContent='🪙 Token ไม่พอ ซื้อ Token ได้ที่แท็บ 💳 ซื้อ/ต่ออายุ หรือเลือกโหมดดูฟรี';return;}
+  }
+  const a=[...Array(78).keys()],r=new Uint32Array(78);crypto.getRandomValues(r);
+  for(let i=77;i>0;i--){const j=r[i]%(i+1);[a[i],a[j]]=[a[j],a[i]];}
+  R.deck=a;R.pick=[];R.step='pick';render();
+}
+function rGrid(){return R.deck.map((c,i)=>{const k=R.pick.indexOf(i);return `<button class="tb ${k>=0?'on':''}" onclick="rPick(${i})">${k>=0?k+1:'✦'}</button>`;}).join('');}
+function rPickView(){
+  return `<div class="card"><b>🃏 ตั้งจิตนึกถึงเรื่อง ${R.topics.map(t=>'"'+esc(R_TOP[t])+'"').join(' และ ')} แล้วเลือกไพ่ ${R.n} ใบ</b>
+  <div class="sm">เลขบนไพ่คือลำดับที่เลือก (ตำแหน่งที่ 1 → ${R.n}) กดซ้ำเพื่อยกเลิก</div>
+  <div class="tgrid" id="tgrid">${rGrid()}</div>
+  <div class="row" style="align-items:center"><span id="tcnt">เลือกแล้ว ${R.pick.length}/${R.n}</span>
+  <button class="btn g" id="rgo" onclick="rReveal()" ${R.pick.length===R.n?'':'disabled'}>✨ เปิดไพ่และอ่าน</button>
+  <button class="btn o" onclick="R.step='form';render()">← กลับ</button></div></div>`;
+}
+function rPick(i){
+  const k=R.pick.indexOf(i);
+  if(k>=0)R.pick.splice(k,1);else if(R.pick.length<R.n)R.pick.push(i);
+  $('tgrid').innerHTML=rGrid();$('tcnt').textContent='เลือกแล้ว '+R.pick.length+'/'+R.n;$('rgo').disabled=R.pick.length!==R.n;
+}
+function rReveal(){
+  if(R.mode==='ai'){
+    const msg=S.pw?'ยืนยันให้ AI ทำนายแบบละเอียดใช่ไหม?\n(Admin ไม่ถูกหัก Token)'
+      :'ยืนยันให้ AI ทำนายแบบละเอียดใช่ไหม?\n\nจะหัก 1 Token ทันที (คืนให้ถ้า AI ทำนายไม่สำเร็จ)';
+    if(!confirm(msg))return;
+  }
+  const r=new Uint8Array(R.n);crypto.getRandomValues(r);
+  R.out=R.pick.map((p,i)=>({c:TAROT[R.deck[p]],rev:(r[i]&1)===1}));
+  R.ai=null;R.step='result';render();if(R.mode==='ai')rAI();
+}
+async function rAI(){
+  const my=R.out;
+  if(!S.token&&!S.pw){R.ai={err:'login'};render();return;}
+  if(S.acct&&S.acct.role!=='user'){R.ai={err:'viewer'};render();return;}
+  R.ai={loading:true};render();
+  const P=rPos(),z=rZodiac(R.d,R.m),bc=rBirthCards();
+  const payload={
+    topics:R.topics.map(t=>R_TW[t]),
+    useMbti:!!R.mbtiOn, mbti:(S.mbti||{}).type||'',
+    useChart:!!R.chartOn, chart:R.chartOn?bcSummary():'',
+    born:R.d+' '+MONTHS[R.m]+' '+R.y,
+    zodiac:z.name+' ธาตุ'+z.el,
+    birthCard:bc.birth.en, yearCard:bc.year.en,
+    cards:R.out.map((x,i)=>({
+      name:x.c.en+(x.c.t==='major'?' ('+x.c.th+')':''), rev:x.rev,
+      pos:(P[i]||[''])[0], posDesc:(P[i]||['',''])[1], keywords:x.rev?x.c.rev:x.c.up}))
+  };
+  try{
+    const d=await api('apiTarotReading',cred(),payload);
+    if(R.out!==my)return;
+    R.ai={data:d};
+    if(d.tokens!=null&&S.acct)S.acct.tokens=d.tokens;
+  }catch(e){if(R.out!==my)return;R.ai={err:e.message};}
+  if(R.step==='result')render();
+}
+
+/* ---------- ผลการอ่าน ---------- */
+function rAskAI(){
+  if(!(S.pw||(S.acct&&S.acct.role==='user'))){R.ai={err:'login'};render();return;}
+  if(!S.pw&&S.acct.tokens<1){R.ai={err:'Token ไม่พอ ซื้อ Token ได้ที่แท็บ Thai Lottery Analyzer > ซื้อ/ต่ออายุ'};render();return;}
+  const msg=S.pw?'ยืนยันให้ AI ทำนายไพ่ชุดนี้แบบละเอียดใช่ไหม?'
+    :'ยืนยันให้ AI ทำนายไพ่ชุดนี้แบบละเอียดใช่ไหม?\n\nจะหัก 1 Token ทันที';
+  if(!confirm(msg))return;
+  rAI();
+}
+function rResult(){
+  const cs=R.out,P=rPos(),n=cs.length,T=R.topics;const A=R.ai&&R.ai.data;
+const pre='style="white-space:pre-line"';
+  const z=rZodiac(R.d,R.m),bc=rBirthCards();
+  
+  const cards=cs.map((x,i)=>{
+    const c=x.c,pt=P[i]||['',''],role=rRole(pt[0],n),base=rText(c,x.rev,T[0]);
+    const kw=c[x.rev?'rev':'up'].split(' ').filter(Boolean).map(k=>`<span class="kw">${esc(k)}</span>`).join('');
+    const frame=R_FR[role][x.rev?1:0].replace('{t}',base);
+    
+    let feat=c.t==='major'?`⭐ ไพ่ใบใหญ่ (เลข ${c.no}) น้ำหนักสูง สื่อถึงบทเรียนหรือจุดเปลี่ยนสำคัญของชีวิต ไม่ใช่เรื่องผิวเผิน`
+      :`ชุด${R_SU[c.t]} ธาตุ${R_EL[c.t]} (เรื่อง${c.suit}) · ${c.no<=10?'เลข '+c.no+' หมายถึง'+R_NUM[c.no]:'ไพ่ราชสำนัก แทนบุคคลหรือบทบาท/ท่าทีที่เกี่ยวข้อง'}`;
+
+    const ac=A&&A.cards&&A.cards[i];
+
+    let body = '';
+    if(ac){
+      body = `<div class="rp"><b>✨ ${esc(ac.headline)}</b></div><div class="rp" ${pre}>${esc(ac.reading)}</div>${ac.advice?`<div class="rp" ${pre}><b>💡 คำแนะนำ:</b> ${esc(ac.advice)}</div>`:''}`;
+    } else {
+      // FREE MODE - อ่านทำนายละเอียดขยายความเต็มรูปแบบ
+      const deepSymbol = getCardDeepMeaning(c, x.rev);
+      const dosDonts = getCardDosAndDonts(c, x.rev);
+      const topicLines = T.map(t=>{
+        const w=c.t==='major'?'น้ำหนักสูง':rMatch(c,t)?(R_REL[t].length?'ตรงชุดหลัก น้ำหนักสูง':'อ่านได้ทุกชุด'):'เป็นปัจจัยแวดล้อม น้ำหนักรอง';
+        return `<div class="rp" style="margin-top:4px">• <b>ด้าน${esc(R_TW[t])}:</b> ${esc(getTopicDetail(c,x.rev,t))} <span class="sm">(${w})</span></div>`;
+      }).join('');
+
+      body = `
+        <div class="rp" style="margin-top:6px"><b>📖 การอ่านไพ่ในตำแหน่ง "${esc(pt[0])}":</b><br>${esc(frame)}</div>
+        <div class="rp" style="margin-top:8px"><b>🔮 ความหมายไพ่เชิงลึกและสัญลักษณ์:</b><br>${deepSymbol}</div>
+        <div class="rp" style="margin-top:8px"><b>🎯 การวิเคราะห์เจาะลึกตามเรื่องที่ถาม:</b></div>
+        ${topicLines}
+        <div class="rp" style="margin-top:10px;padding:8px;background:rgba(0,229,160,0.05);border-left:3px solid var(--a);border-radius:6px">
+          <b>📌 สิ่งที่ควรทำ (Dos):</b>
+          <ul style="margin-left:18px;margin-top:4px">
+            ${dosDonts.dos.map(d=>`<li>${esc(d)}</li>`).join('')}
+          </ul>
+          <b style="margin-top:6px;display:block">⚠️ สิ่งที่ควรระวัง (Don'ts):</b>
+          <ul style="margin-left:18px;margin-top:4px">
+            ${dosDonts.donts.map(d=>`<li>${esc(d)}</li>`).join('')}
+          </ul>
+        </div>
+        <details style="margin-top:8px;cursor:pointer"><summary class="sm"><b>📜 ดูประวัติ เรื่องราวภาพในไพ่ และที่มาเพิ่มเติม</b></summary>
+          <div style="font-size:12px;line-height:1.6;margin-top:6px">${tStory(c)}</div>
+        </details>
+      `;
+    }
+
+    return `<div class="h rcard ${x.rev?'rev':''}"><div class="sm">ตำแหน่ง ${i+1} · <b>${esc(pt[0])}</b> — ${esc(pt[1])}</div>
+    <div style="margin:2px 0"><b>${esc(c.en)}</b> ${c.t==='major'?`<span class="sm">${esc(c.th)}</span>`:''} · ${x.rev?'<b style="color:var(--w)">↓ ไพ่คว่ำ</b>':'<b style="color:var(--a)">↑ ไพ่หงาย</b>'}</div>
+    ${tImg(c,x.rev)}
+    <div>${kw}</div>
+    ${body}
+    <div class="sm rp" style="margin-top:8px">${x.rev?'ไพ่คว่ำ = พลังงานของไพ่อ่อนลง ถูกกดไว้ ใช้เกินพอดี หรือกำลังเปลี่ยนแปลง · ':'ไพ่หงาย = พลังงานทำงานตามธรรมชาติของไพ่ ชัดเจนและเปิดเผย · '}${feat}</div></div>`;
+  }).join('');
+
+  // สรุปภาพรวมสำหรับโหมดดูฟรี
+  const freeSum = buildFreeSummary(cs, P, T, z, bc, n);
+
+  const ai=R.ai||{free:1},box=t=>`<div class="sumbox">${t}</div>`;
+  const btn='<button class="btn" style="margin-left:6px" onclick="rAskAI()">🤖 ให้ AI ทำนายรายละเอียดเพิ่มเติม (ใช้ 1 Token)</button>';
+  
+  const status=ai.data?'':ai.free?box('🌐 คำอ่านดวงแบบฟรี (ฉบับขยายความละเอียดสูงสุด) '+btn)
+    :ai.loading?box('⏳ กำลังประมวลผล...')
+    :ai.err==='login'?box('🔒 ต้องเข้าสู่ระบบด้วยบัญชี User (ที่แท็บ Thai Lottery Analyzer) จึงจะใช้ AI ทำนายได้ ตอนนี้แสดงคำอ่านฉบับเต็มฟรี')
+    :ai.err==='viewer'?box('👀 บัญชี Viewer เป็นโหมดตัวอย่าง (แสดงคำอ่านฉบับเต็มฟรี)')
+    :box('⚠ สร้างคำทำนายจาก AI ไม่สำเร็จ: '+esc(ai.err)+' (แสดงคำอ่านฉบับเต็มฟรีแทน) '+btn);
+
+  const introHtml=A&&A.intro?`<div class="sumbox" ${pre}>${esc(A.intro)}</div>`:'';
+  
+  const sumHtml=A?`<div class="sumbox"><b>📋 สรุปภาพรวมคำทำนาย</b><br><span ${pre}>${esc(A.summary)}</span></div>`
+    :`<div class="sumbox"><b style="font-size:14px;color:var(--a)">📋 สรุปวิเคราะห์โครงสร้างดวงชะตาและพลังงานไพ่</b><br><br>${freeSum.structHtml}</div>`;
+    
+  const topicHtml=A?`<div class="sumbox"><b>🧭 สรุปวิเคราะห์เจาะลึกแยกตามเรื่องที่ถาม</b>${(A.topics||[]).map(t=>`<div class="rp"><b>▸ ${esc(t.topic)}</b><br><span ${pre}>${esc(t.reading)}</span></div>`).join('')}</div>`
+    :`<div class="sumbox"><b style="font-size:14px;color:var(--a2)">🧭 สรุปวิเคราะห์เจาะลึกแยกตามเรื่องที่เลือก</b>${freeSum.topicHtml}</div>`;
+    
+  const advHtml=A&&A.advice?`<div class="sumbox"><b>💡 คำแนะนำจากไพ่</b><br><span ${pre}>${esc(A.advice)}</span></div>`
+    :`<div class="sumbox"><b style="font-size:14px;color:var(--w)">💡 ยุทธศาสตร์และเข็มทิศชี้นำชีวิต</b><br>
+      <div class="rp" style="margin-top:6px">
+        <b>🎯 ทิศทางปลายทาง (Outcome):</b> ${freeSum.outcomeText}<br><br>
+        <b>🌱 คำแนะนำการปรับตัวและก้าวไปข้างหน้า:</b><br>
+        1. <b>ตั้งสติและประเมินสถานการณ์ตามความเป็นจริง:</b> อย่าปล่อยให้อารมณ์หรือความกลัวล่วงหน้ามาบดบังเหตุผล<br>
+        2. <b>เน้นการแก้ปัญหาที่รากฐาน:</b> หากพบไพ่คว่ำ ให้เน้นการสะสางงานเก่า ปรับความเข้าใจ หรือเยียวยาจิตใจก่อนจะเริ่มสิ่งใหม่<br>
+        3. <b>ใช้ประโยชน์จากจุดแข็งของธาตุหลัก:</b> ปรับพฤติกรรมให้สอดคล้องกับพลังงานไพ่ เพื่อเปิดรับโชคลาภและโอกาสอย่างราบรื่น
+      </div>
+     </div>`;
+
+  const ov=ai.loading?`<div class="ov"><div class="spin"></div><div class="t1">กำลังประมวลผลคำทำนายจาก AI</div><div class="t2">ใช้เวลาประมาณ 20-40 วินาที<br>กรุณาอย่าปิดหรือรีเฟรชหน้านี้</div></div>`:'';
+  return ov+`<div class="card"><b>🔮 ผลการทำนาย</b>
+  <div class="sm">ไพ่ ${n} ใบ · เกิด ${R.d} ${MONTHS[R.m]} ${R.y}</div>
+  <div class="sumbox"><b>🌟 ดวงพื้นฐานของคุณ</b><br>ราศี${esc(z.name)} ธาตุ${z.el}<br>
+  ไพ่ประจำตัว (Birth Card): <b>${esc(bc.birth.en)}</b> — ${esc(bc.birth.up)}<br>
+  ไพ่ประจำปี ${bc.cy} (Personal Year): <b>${esc(bc.year.en)}</b> — ${esc(bc.year.up)}</div>
+  ${status}${introHtml}
+  <div class="sec-title">ไพ่ที่ได้</div>${cards}
+  ${sumHtml}${topicHtml}${advHtml}
+  <div class="sm" style="margin-top:8px">⚠ การอ่านไพ่เป็นเครื่องมือสะสางความคิดและแนวทาง ไม่ใช่คำพยากรณ์ที่แน่นอน ใช้ประกอบการตัดสินใจเท่านั้น</div>
+  <button class="btn g" style="margin-top:8px" onclick="R.step='form';R.out=null;R.ai=null;render()">🔄 ทำนายใหม่</button></div>`;
+}
+;(window.__ok=window.__ok||[]).push(3);
+</script>
+<script>
+const MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const QR='https:\/\/promptpay.io/0990262586.png';
+const PACKS={1:30,4:100,50:1000};
+const SET_HINT={
+  set1:'เลขที่ชนกันมากที่สุดจากสำนักเลขดัง/อั้น/ขายดี',
+  set2:'เลขจากสำนักฟันธง/เลขหลุด/Top 10 มาแรง',
+  set3:'เลขจากความเชื่อ/ผีบอก/คำชะโนด/ดวงดาว/วันสำคัญ',
+  set4:'เลขจากสูตรคำนวณทางคณิตศาสตร์',
+  sixDigit:'เลขจากสูตรคำนวณทางคณิตศาสตร์'
+};
+const FRONT='2026-09-29-v9';
+const S={app:'lottery',mode:'login',tab:'login',utab:'latest',atab:'register',token:null,acct:null,pw:null,build:'',hist:[],mine:[],hv:{},mineErr:'',reqs:null,users:null,uq:'',uf:'all',msg:'',ok:false};
+const $=id=>document.getElementById(id), v=id=>($(id)||{}).value||'';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ===== API สำหรับ Static Host (Render / GitHub Pages) ===== */
+const BACKEND_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"; // ← เปลี่ยนเป็นลิงก์ /exec ของคุณ
+
+function api(fn){
+  const args = [].slice.call(arguments, 1);
+  return fetch(BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script ต้องการแบบนี้
+    body: JSON.stringify({ fn: fn, args: args })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) throw new Error(data.error);
+    return data.result;
+  });
+}
+function say(m,ok){S.msg=m;S.ok=!!ok;const e=$('msg');if(e){e.textContent=m;e.className='err'+(ok?' ok':'');}}
+function go(m){S.mode=m;render();}
+function cred(){return S.pw?{pw:S.pw}:{t:S.token};}
+function dsel(p,dm){return `<div class="row"><select class="sel" id="${p}d"><option>1</option><option ${dm==16?'selected':''}>16</option></select><select class="sel" id="${p}m">${MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select><select class="sel" id="${p}y">${[2569,2570,2571,2572].map(y=>`<option>${y}</option>`).join('')}</select></div>`;}
+function dlabel(p){return v(p+'d')+' '+MONTHS[+v(p+'m')]+' '+v(p+'y');}
+function slipIn(id){return `<input type="file" id="${id}" accept="image/*" class="inp">`;}
+function jpeg(file,max,q){return new Promise((res,rej)=>{if(!file)return res('');const r=new FileReader();r.onerror=()=>rej(new Error('อ่านไฟล์ไม่ได้'));r.onload=()=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q));};i.onerror=()=>rej(new Error('ไฟล์ไม่ใช่รูปภาพ'));i.src=r.result;};r.readAsDataURL(file);});}
+const slip=id=>jpeg(($(id)||{}).files&&$(id).files[0],1000,.7);
+
+function setBlock(title, item, six){
+  item = item || {};
+  const src = String(item.source||'').trim();
+  const why = String(item.reason||'').trim();
+  return `<div class="set${six?' six':''}">
+    <div class="lbl">${esc(title)}</div>
+    <div class="num">${esc(item.num||'—')}</div>
+    ${src?`<div class="src">ที่มา: ${esc(src)}</div>`:''}
+    ${why?`<div class="why">${esc(why)}</div>`:''}
+  </div>`;
+}
+function simpleLine(title, num, hint, six){
+  return `<div class="uline${six?' six':''}"><div class="k">${esc(title)}</div><div class="n">${esc(num||'—')}</div><div class="hint">${esc(hint)}</div></div>`;
+}
+function resultHtml(r, full){
+  r = r || {};
+  if(full){
+    return `<div class="sec-title">ชุดเลข 3 ตัวท้าย</div>
+      <div class="sets">
+        ${setBlock('ชุดที่ 1', r.set1)}
+        ${setBlock('ชุดที่ 2', r.set2)}
+        ${setBlock('ชุดที่ 3', r.set3)}
+        ${setBlock('ชุดที่ 4', r.set4)}
+        ${setBlock('ชุด 6 หลัก', r.sixDigit, true)}
+      </div>
+      ${r.summary?`<div class="sumbox"><b>สรุปงวด</b><br>${esc(r.summary)}</div>`:''}`;
+  }
+  return `<div class="sec-title">ชุดเลข 3 ตัวท้าย</div>
+    <div class="ulist">
+      ${simpleLine('ชุดที่ 1', (r.set1||{}).num, SET_HINT.set1)}
+      ${simpleLine('ชุดที่ 2', (r.set2||{}).num, SET_HINT.set2)}
+      ${simpleLine('ชุดที่ 3', (r.set3||{}).num, SET_HINT.set3)}
+      ${simpleLine('ชุดที่ 4', (r.set4||{}).num, SET_HINT.set4)}
+      ${simpleLine('ชุด 6 หลัก', (r.sixDigit||{}).num, SET_HINT.sixDigit, true)}
+    </div>`;
+}
+const verWarn=()=>(S.build&&S.build!==FRONT)?`<div class="err">⚠ Code.gs บนเซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า (เซิร์ฟเวอร์ ${esc(S.build)} / หน้าเว็บ ${FRONT}) — วาง Code.gs ใหม่แล้ว Deploy > New version</div>`:'';
+function isAdminView(){return S.mode==='admin';}
+function histCard(h,latest,full){
+  return `<div class="h">
+    <div class="sm">${latest?'🔴 ล่าสุด · ':''}📅 ${esc(h.drawDate)} · ${esc(h.savedAt)}</div>
+    ${resultHtml(h.result, full)}
+  </div>`;
+}
+function toggleHist(btn,key,n){
+  S.hv[key]=!S.hv[key];
+  const box=btn.nextElementSibling;
+  box.style.display=S.hv[key]?'block':'none';
+  btn.textContent=S.hv[key]?'🔼 ซ่อนประวัติ':'📜 ประวัติ ('+n+' รายการ)';
+}
+
+function histHtml(l,key){
+  if(!l.length)return '<div class="sm">ยังไม่มีข้อมูล</div>';
+  const full=isAdminView(), old=l.slice(1), open=!!S.hv[key];
+  return histCard(l[0],true,full)+(old.length
+    ?`<button class="btn o" style="margin-bottom:.65rem" onclick="toggleHist(this,'${key}',${old.length})">${open?'🔼 ซ่อนประวัติ':'📜 ประวัติ ('+old.length+' รายการ)'}</button>
+      <div style="display:${open?'block':'none'}">${old.map(x=>histCard(x,false,full)).join('')}</div>`
+    :'');
+}
+
+/* ---------- Admin: จัดการ User ---------- */
+const DAYMS=864e5;
+const ST_TH={approved:'อนุมัติแล้ว',pending:'รออนุมัติ',rejected:'ไม่อนุมัติ'};
+const daysLeft=u=>u.expiredAt?Math.ceil((u.expiredAt-Date.now())/DAYMS):null;
+const fdate=t=>t?new Date(t).toLocaleDateString('th-TH'):'—';
+function uMatch(u){
+  const q=(S.uq||'').trim().toLowerCase(), d=daysLeft(u), f=S.uf, s=u.stats||{};
+  if(q&&!([u.username,u.name,u.contact].some(x=>String(x||'').toLowerCase().includes(q))))return false;
+  if(f==='pending')return u.status==='pending';
+  if(f==='near')return u.status==='approved'&&d!==null&&d>=0&&d<=7;
+  if(f==='expired')return d!==null&&d<0;
+  if(f==='req')return s.renewPending>0||s.buyPending>0;
+  return true;
+}
+function uSort(a,b){
+  const k=u=>u.status==='pending'?-1e9:(daysLeft(u)===null?1e9:daysLeft(u));
+  return k(a)-k(b);
+}
+function userCard(u){
+  const d=daysLeft(u), s=u.stats||{};
+  let ex='ยังไม่มีวันหมดอายุ', c='';
+  if(d!==null){
+    ex=(d<0?'หมดอายุแล้ว '+(-d)+' วัน':d===0?'หมดอายุวันนี้':'เหลือ '+d+' วัน')+' ('+fdate(u.expiredAt)+')';
+    c=d<0?'bad':d<=7?'warn':'good';
+  }
+  const flags=[];
+  if(s.renewPending)flags.push(`<span class="pill warn">🔄 ขอต่ออายุ ${s.renewPending} รายการ รอตรวจ</span>`);
+  if(s.buyPending)flags.push(`<span class="pill warn">🪙 ขอซื้อ Token ${s.buyPending} รายการ รอตรวจ</span>`);
+  return `<div class="card ucard" data-u="${esc(u.username)}">
+    <div class="top" style="margin-bottom:.3rem"><b>${esc(u.name||'—')} <span class="sm">@${esc(u.username)} · ${esc(u.role)}</span></b>
+      <span class="pill ${u.status==='approved'?'good':u.status==='pending'?'warn':'bad'}">${esc(ST_TH[u.status]||u.status)}</span></div>
+    <div class="sm">📞 ${esc(u.contact||'—')} · สมัคร ${fdate(u.createdAt)} · เข้าล่าสุด ${fdate(u.lastLogin)}</div>
+    <div class="grid2">
+      <div><span class="sm">อายุบัญชี</span><b class="${c}">${esc(ex)}</b></div>
+      <div><span class="sm">Token คงเหลือ</span><b>🪙 ${u.tokens}</b></div>
+    </div>
+    ${flags.length?`<div class="flags">${flags.join('')}</div>`:''}
+    <div class="st">
+      🪙 ซื้อ Token แล้ว ${s.buyCount||0} ครั้ง${s.buyCount?` · รวม ${s.buyTokens} Token · ฿${s.buyBaht}${s.lastBuy?' · ล่าสุด '+fdate(s.lastBuy):''}`:''}<br>
+      🔄 ต่ออายุแล้ว ${s.renewCount||0} ครั้ง${s.lastRenew?' · ล่าสุด '+fdate(s.lastRenew):''}<br>
+      ❤️ Donate ${s.donateCount||0} ครั้ง${s.lastDonate?' · ล่าสุด '+fdate(s.lastDonate):''}<br>
+      🎯 สุ่มเอง ${s.spins||0} ครั้ง
+    </div>
+    ${u.role==='user'?`<div class="act">
+      <input class="inp tk" type="number" step="1" placeholder="Token (ใส่ - เพื่อหัก)">
+      <input class="inp tn" placeholder="หมายเหตุ (ไม่บังคับ)">
+      <button class="btn g" onclick="addTk(this)">＋ ปรับ Token</button>
+    </div>
+    <div class="act">
+      <input class="inp pw" autocomplete="off" placeholder="Password ใหม่ (อย่างน้อย 4 ตัว)">
+      <button class="btn" onclick="setPw(this)">🔑 เปลี่ยนรหัส</button>
+    </div>`:''}
+  </div>`;
+}
+function usersList(){
+  const l=(S.users||[]).filter(uMatch).sort(uSort);
+  return l.length?l.map(userCard).join(''):'<div class="sm">ไม่พบบัญชีที่ตรงเงื่อนไข</div>';
+}
+function drawUsers(){const e=$('ulist');if(e)e.innerHTML=usersList();}
+function usersView(){
+  const L=S.users;
+  if(!L)return '<div class="err" id="msg"></div><div class="sm">กำลังโหลด…</div>';
+  const dl=u=>daysLeft(u);
+  const pend=L.filter(u=>u.status==='pending').length;
+  const near=L.filter(u=>u.status==='approved'&&dl(u)!==null&&dl(u)>=0&&dl(u)<=7).length;
+  const exp=L.filter(u=>dl(u)!==null&&dl(u)<0).length;
+  const req=L.filter(u=>(u.stats.renewPending||0)+(u.stats.buyPending||0)>0).length;
+  const tk=L.reduce((a,u)=>a+u.tokens,0);
+  const F=[['all','ทั้งหมด'],['pending','รออนุมัติ'],['near','ใกล้หมดอายุ (≤7 วัน)'],['expired','หมดอายุแล้ว'],['req','มีคำขอรอตรวจ']];
+  return `<div class="err" id="msg" style="position:sticky;top:0;background:var(--bg);z-index:5"></div>
+    <div class="sumbox" style="margin-top:0">👥 ทั้งหมด ${L.length} · รออนุมัติ ${pend} · ใกล้หมดอายุ ${near} · หมดอายุแล้ว ${exp} · มีคำขอรอตรวจ ${req} · 🪙 รวมทุกบัญชี ${tk}</div>
+    <div class="row" style="margin-top:.6rem">
+      <input class="inp" id="uq" style="flex:2;min-width:160px" placeholder="ค้นหา username / ชื่อ / เบอร์" value="${esc(S.uq)}" oninput="S.uq=this.value;drawUsers()">
+      <select class="sel" id="uf" onchange="S.uf=this.value;drawUsers()">${F.map(f=>`<option value="${f[0]}" ${S.uf===f[0]?'selected':''}>${f[1]}</option>`).join('')}</select>
+    </div>
+    <div id="ulist">${usersList()}</div>`;
+}
+;(window.__ok=window.__ok||[]).push(4);
+</script>
+<script>
+function atabGo(k){S.atab=k;render();if(k==='users')loadUsers();}
+async function loadUsers(){try{S.users=await api('adminUsers',S.pw);render();}catch(e){say(e.message);}}
+function refreshAdmin(){loadReqs();if(S.atab==='users')loadUsers();}
+async function addTk(btn){
+  const c=btn.closest('.ucard'),u=c.dataset.u,n=parseInt(c.querySelector('.tk').value,10);
+  if(!n)return say('กรุณาใส่จำนวน Token (ใส่เครื่องหมาย - เพื่อหัก)');
+  if(!confirm((n>0?'เพิ่ม ':'หัก ')+Math.abs(n)+' Token ให้ @'+u+' ?'))return;
+  try{
+    say('กำลังบันทึก…',1);
+    const r=await api('adminAddTokens',S.pw,u,n,c.querySelector('.tn').value);
+    await loadUsers();
+    say('✅ @'+r.username+' มี '+r.tokens+' Token',1);
+  }catch(e){say(e.message);}
+}
+async function setPw(btn){
+  const c=btn.closest('.ucard'),u=c.dataset.u,p=c.querySelector('.pw').value;
+  if(p.length<4)return say('Password ใหม่ต้องมีอย่างน้อย 4 ตัว');
+  if(!confirm('เปลี่ยนรหัสผ่านของ @'+u+' ?'))return;
+  try{
+    say('กำลังบันทึก…',1);
+    await api('adminSetPassword',S.pw,u,p);
+    c.querySelector('.pw').value='';
+    say('✅ เปลี่ยนรหัสผ่านของ @'+u+' แล้ว (รหัสใหม่: '+p+')',1);
+  }catch(e){say(e.message);}
+}
+function previewHtml(){
+  // แสดงเลขจริงที่ Admin แชร์ไว้ (ไม่ต้อง login)
+  return `<div class="card">
+    <div class="top" style="margin-bottom:.4rem"><b>🎰 เลขเด็ดงวดล่าสุด</b><span class="pill good">ดูฟรี</span></div>
+    <div class="sm" style="margin-bottom:.6rem">เลขที่ Admin บันทึกไว้ · ดูได้โดยไม่ต้องเข้าสู่ระบบ</div>
+    <div id="public-hist">${S.hist && S.hist.length ? histHtml(S.hist,'latest') : '<div class="sm">กำลังโหลดเลขล่าสุด…</div>'}</div>
+    <div class="sumbox" style="margin-top:1rem">
+      ต้องการสุ่มเลขเอง / ดูไพ่ยิปซี / วิเคราะห์ดวง?<br>
+      <b>สมัครสมาชิก ฿20 / 30 วัน</b> แล้วซื้อ Token เพื่อใช้งาน
+    </div>
+    <div class="row" style="margin-top:.8rem">
+      <button class="btn g" onclick="S.tab='register';render();scrollTo(0,0)">📝 สมัครสมาชิก ฿20</button>
+      <button class="btn" onclick="S.tab='login';render();scrollTo(0,0)">🔐 เข้าสู่ระบบ</button>
+    </div>
+  </div>`;
+}
+
+function appBar(){
+  const L=[['lottery','เลขเด็ด'],['tarot','ไพ่ยิปซี'],['mbti','MBTI'],['chart','ดวงกำเนิด']];
+  const M2=S.mode==='admin'?[]:[['mine','สุ่มของฉัน'],['buy','ซื้อ / ต่ออายุ'],['donate','สนับสนุน']];
+  return `<div class="tabs" style="margin-bottom:.9rem">${L.concat(M2).map(t=>`<div class="tab ${S.app===t[0]?'on':''}" onclick="S.app='${t[0]}';render()">${t[1]}</div>`).join('')}</div>`;
+}
+function render(){
+  try{
+    if(S.mode==='login')S.app='lottery';
+    if(S.mode==='admin'&&['lottery','tarot','mbti','chart'].indexOf(S.app)<0)S.app='lottery';
+    renderMain();
+    const a=$('app');
+    if(S.mode!=='login'){
+      if(S.app==='tarot')a.innerHTML=appBar()+tarotView();
+      else if(S.app==='mbti')a.innerHTML=appBar()+(typeof mbtiView==='function'?mbtiView():'...');
+      else if(S.app==='chart')a.innerHTML=appBar()+chartView();   // ← เพิ่มบรรทัดนี้
+      else a.insertAdjacentHTML('afterbegin',appBar());
+    }
+    document.body.style.overflow=(S.app==='tarot'&&R.step==='result'&&R.ai&&R.ai.loading)?'hidden':'';
+  }catch(e){
+    const a=$('app');
+    if(a)a.insertAdjacentHTML('afterbegin',appBar()+'<div class="err">⚠ '+esc(e.message)+'</div>');
+  }
+}
+function renderMain(){
+  const a=$('app');
+  if(S.mode==='login'){
+    const T=[['login','เข้าสู่ระบบ'],['register','สมัคร'],['renew','ต่ออายุ']];
+    let f='';
+    if(S.tab==='login')f=`<input class="inp" id="lu" placeholder="Username"><input class="inp" id="lp" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"><button class="btn" onclick="doLogin()">เข้าสู่ระบบ</button>`;
+    if(S.tab==='register')f=`<input class="inp" id="ru" placeholder="Username (a-z 0-9 _)"><input class="inp" id="rp" type="password" placeholder="Password (อย่างน้อย 4 ตัว)"><input class="inp" id="rn" placeholder="ชื่อ-นามสกุล"><input class="inp" id="rc" placeholder="เบอร์โทร / LINE"><div class="sm">ค่าสมัคร 20 บาท โอน PromptPay แล้วแนบสลิป</div><img class="slip" src="${QR}" width="140">${slipIn('rs')}<button class="btn g" onclick="doRegister()">ส่งคำขอสมัคร</button>`;
+    if(S.tab==='renew')f=`<input class="inp" id="nu" placeholder="Username"><input class="inp" id="np" type="password" placeholder="Password"><div class="sm">ต่ออายุ 20 บาท / 30 วัน</div><img class="slip" src="${QR}" width="140">${slipIn('ns')}<button class="btn g" onclick="doRenew()">ส่งคำขอต่ออายุ</button>`;
+    a.innerHTML=`<div class="brand"><div class="mark">TA</div><div><div class="nm">Thai Analyzer</div><div class="sub">เลขเด็ด · ไพ่ · ดวงกำเนิด</div></div></div><div class="card"><h2>${S.tab==='register'?'สมัครสมาชิก':S.tab==='renew'?'ต่ออายุสมาชิก':'เข้าสู่ระบบ'}</h2><div class="sm">BUILD ${esc(S.build)||'…'}</div>${verWarn()}<div class="tabs" style="margin-top:.6rem">${T.map(t=>`<div class="tab ${S.tab==t[0]?'on':''}" onclick="S.tab='${t[0]}';render()">${t[1]}</div>`).join('')}</div>${f}<div class="err" id="msg"></div></div>`+previewHtml();
+    setTimeout(loadPublicHist, 100);
+    return;
+  }
+  if(S.mode==='user'){
+    const ac=S.acct,isU=ac.role==='user';
+    S.utab={lottery:'latest',mine:'mine',buy:'buy',donate:'donate'}[S.app]||'latest';
+    const exp=ac.expiredAt?new Date(ac.expiredAt).toLocaleDateString('th-TH'):'—';
+    let b='';
+    if(S.utab==='latest')b=histHtml(S.hist,'latest');
+    if(S.utab==='mine')b=`<div class="card">${dsel('u',16)}<button class="btn g" id="sp" onclick="${isU?'doSpin()':'viewerNote()'}">🎯 สุ่ม (ใช้ 1 Token)</button>${isU?'':'<div class="sm" style="margin-top:.4rem">โหมดตัวอย่าง: บัญชี Viewer กดสุ่มจริงไม่ได้ สมัครและซื้อ Token เพื่อใช้งานจริง</div>'}</div><div class="err" id="msg"></div>${S.mineErr?`<div class="err">⚠ โหลดประวัติการสุ่มไม่ได้: ${esc(S.mineErr)}</div>`:''}${histHtml(S.mine,'mine')}<div class="sm">ประวัติการสุ่มของคุณถูกเก็บไว้ เข้าสู่ระบบใหม่ก็ยังเห็น (แสดงล่าสุด 100 ครั้ง)</div>`;
+    if(S.utab==='buy')b=`<div class="card"><select class="sel" id="bp">${Object.keys(PACKS).map(k=>`<option value="${k}">${k} Token — ฿${PACKS[k]}</option>`).join('')}</select><img class="slip" src="${QR}" width="140">${isU?slipIn('bs')+`<button class="btn g" onclick="doBuy('token')">ส่งสลิปซื้อ Token</button>`:'<div class="sm">โหมดตัวอย่าง: Viewer ส่งสลิปไม่ได้ กรุณาสมัครสมาชิกก่อน</div>'}</div>${isU?`<div class="card"><b>ต่ออายุ 30 วัน — ฿20</b>${slipIn('bl')}<button class="btn" onclick="doBuy('renew')">ส่งสลิปต่ออายุ</button></div>`:''}<div class="err" id="msg"></div>`;
+    if(S.utab==='donate')b=`<div class="card"><b>❤️ สนับสนุนผู้พัฒนา</b><div class="sm">โอนตามจำนวนที่ต้องการแล้วแนบสลิป Admin จะเห็นว่าโอนมาจากบัญชีของคุณ</div><img class="slip" src="${QR}" width="140">${isU?slipIn('ds')+`<textarea class="inp" id="dm" placeholder="ข้อความถึง Admin (ไม่บังคับ)"></textarea><button class="btn g" onclick="doDonate()">ส่งสลิป Donate</button>`:'<div class="sm">โหมดตัวอย่าง: Viewer ส่งสลิปไม่ได้</div>'}</div><div class="err" id="msg"></div>`;
+    a.innerHTML=`${verWarn()}<div class="top"><b>👤 ${esc(ac.username)} <span class="sm">(${esc(ac.role)})</span></b><span>🪙 ${ac.tokens} · หมดอายุ ${exp} <button class="btn o" onclick="logout()">ออก</button></span></div>${b}<div class="sm">⚠ เป็นเพียงแนวทาง ไม่ใช่การันตีผล</div>`;
+    return;
+  }
+  if(S.mode==='admin'){
+    const TY=[['users','👥 User'],['register','📝 สมัคร'],['renew','🔄 ต่ออายุ'],['token','🪙 Token'],['donate','❤️ Donate'],['spin','🎰 สุ่มเลข']];
+    let b='';
+    if(S.atab==='spin')b=`<div class="card">${dsel('a',16)}<button class="btn g" id="asp" onclick="adminSpin()">🎯 สุ่ม & บันทึก</button><div class="err" id="msg"></div><div id="ares"></div></div>${manualForm()}${histHtml(S.hist,'admin')}`;
+    else if(S.atab==='users')b=usersView();
+    else if(!S.reqs)b='<div class="sm">กำลังโหลด…</div>';
+    else{const l=(S.reqs[S.atab]||[]).slice().reverse();b=l.length?l.map(r=>`<div class="card"><b>${esc(r.name)}</b> ${r.user?'@'+esc(r.user):''} <span class="sm">${esc(r.phone)} · ${esc(r.time)}${r.tokens?' · 🪙'+r.tokens:''} · ฿${esc(r.price)}</span> <b>[${esc(r.status)}]</b>${r.msg?`<div class="sm">💬 ${esc(r.msg)}</div>`:''}${r.slipData?`<img class="slip" src="${r.slipData}">`:''}${r.status==='pending'?`<div class="row"><button class="btn g" onclick="decide('${r.id}',true)">✅ อนุมัติ</button><button class="btn r" onclick="decide('${r.id}',false)">❌ ปฏิเสธ</button></div>`:''}</div>`).join(''):'<div class="sm">ยังไม่มีคำขอ</div>';b+='<div class="err" id="msg"></div>';}
+    a.innerHTML=`<div class="top"><b>⚙️ Admin</b><span><button class="btn o" onclick="refreshAdmin()">↻ รีเฟรช</button> <button class="btn o" onclick="logout()">ออก</button></span></div><div class="tabs">${TY.map(t=>`<div class="tab ${S.atab==t[0]?'on':''}" onclick="atabGo('${t[0]}')">${t[1]}</div>`).join('')}</div>${b}`;
+  }
+}
+
+async function doLogin(){
+  say('กำลังเข้าสู่ระบบ…',1);
+  try{const r=await api('apiLogin',v('lu'),v('lp'));
+    if(r.role==='admin'){S.pw=v('lp');sessionStorage.setItem('adm',S.pw);S.mode='admin';S.atab='register';render();loadReqs();loadHist();}
+    else{S.token=r.token;S.acct=r.account;sessionStorage.setItem('tok',r.token);S.mode='user';S.utab='latest';render();loadHist();loadMine();loadMbti();}
+  }catch(e){say(e.message);}
+}
+function logout(){sessionStorage.clear();S.token=S.pw=S.acct=S.reqs=S.users=null;S.hist=[];S.mine=[];S.mineErr='';S.tab='login';go('login');}
+async function loadHist(){try{S.hist=await api('apiHistory',cred());render();}catch(e){say(e.message);}}
+async function loadPublicHist(){
+  try{
+    S.hist = await api('apiHistory', null);
+    const el = document.getElementById('public-hist');
+    if (el) el.innerHTML = S.hist && S.hist.length ? histHtml(S.hist,'latest') : '<div class="sm">ยังไม่มีเลขที่ Admin บันทึกไว้</div>';
+  }catch(e){
+    const el = document.getElementById('public-hist');
+    if (el) el.innerHTML = '<div class="err">โหลดเลขไม่สำเร็จ: '+esc(e.message)+'</div>';
+  }
+}
+async function loadReqs(){try{S.reqs=await api('adminRequests',S.pw);render();}catch(e){say(e.message);}}
+async function doRegister(){try{say('กำลังส่ง…',1);const s=await slip('rs');await api('apiRegister',v('ru'),v('rp'),v('rn'),v('rc'),s);S.tab='login';render();say('ส่งคำขอสมัครแล้ว รอ Admin อนุมัติ',1);}catch(e){say(e.message);}}
+async function doRenew(){try{say('กำลังส่ง…',1);const s=await slip('ns');if(!s)throw new Error('กรุณาแนบสลิป');await api('apiRenew',v('nu'),v('np'),s);S.tab='login';render();say('ส่งคำขอต่ออายุแล้ว รอ Admin อนุมัติ',1);}catch(e){say(e.message);}}
+async function doDonate(){try{say('กำลังส่ง…',1);const s=await slip('ds');if(!s)throw new Error('กรุณาแนบสลิป');await api('apiDonate',S.token,s,v('dm'));render();say('❤️ ขอบคุณที่สนับสนุนครับ',1);}catch(e){say(e.message);}}
+async function loadMine(){try{S.mine=await api('apiMySpins',S.token);S.mineErr='';}catch(e){S.mineErr=e.message+' (ตรวจว่า Code.gs อัปเดตและ Deploy เวอร์ชันใหม่แล้ว)';}render();}
+async function doBuy(t){try{say('กำลังส่ง…',1);const s=await slip(t==='token'?'bs':'bl');if(!s)throw new Error('กรุณาแนบสลิป');await api('apiRequest',S.token,t,t==='token'?+v('bp'):0,s);say('ส่งแล้ว รอ Admin อนุมัติ',1);}catch(e){say(e.message);}}
+function viewerNote(){say('บัญชี Viewer เป็นโหมดตัวอย่าง สุ่มไม่ได้ กรุณาสมัครสมาชิกและซื้อ Token');}
+;(window.__ok=window.__ok||[]).push(5);
+</script>
+<script>
+async function doSpin(){
+  const b=$('sp');b.disabled=true;say('กำลังสุ่ม… (ใช้เวลาสักครู่)',1);const label=dlabel('u');
+  try{const r=await api('apiUserSpin',S.token,label);S.acct.tokens=r.tokens;S.mine.unshift({drawDate:label,savedAt:new Date().toLocaleString('th-TH'),result:r.result});render();if(r.saved===false)say('⚠ สุ่มได้แล้ว แต่บันทึกประวัติไม่สำเร็จ: '+(r.saveError||''));else say('✅ สุ่มสำเร็จ บันทึกประวัติแล้ว',1);}
+  catch(e){b.disabled=false;say(e.message);}
+}
+async function adminSpin(){
+  const b=$('asp');b.disabled=true;say('กำลังสุ่มและบันทึก…',1);const label=dlabel('a');
+  try{const r=await api('adminSpin',S.pw,label);S.hist.unshift({drawDate:label,savedAt:new Date().toLocaleString('th-TH'),result:r});render();$('ares').innerHTML='<div class="ok">✅ บันทึกงวด '+esc(label)+' แล้ว</div>'+resultHtml(r,true);}
+  catch(e){b.disabled=false;say(e.message);}
+}
+async function decide(id,ok){
+  try{say('กำลังทำรายการ…',1);await api('adminDecide',S.pw,id,ok);await loadReqs();say('ทำรายการแล้ว',1);}catch(e){say(e.message);}
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  const a=sessionStorage.getItem('adm'),t=sessionStorage.getItem('tok');
+  if(a){S.pw=a;S.mode='admin';S.atab='register';render();loadReqs();loadHist();}
+  else if(t){
+    S.token=t;
+    $('app').innerHTML='<div class="sm">กำลังตรวจสอบการเข้าสู่ระบบ…</div>';
+    api('apiMe',t).then(r=>{S.acct=r;S.mode='user';S.utab='latest';render();loadHist();loadMine();loadMbti();}).catch(()=>{logout();});
+  }
+  else render();
+});
+</script>
+<script>
+/* ===== MBTI block ===== */
+const S_MB=0;
+const M={sub:'test',a:{},pg:0,res:null,retake:0};
+const M_PAIR=['EI','SN','TF','JP'];
+const M_DIM=['แหล่งพลังงาน (E/I)','การรับข้อมูล (S/N)','การตัดสินใจ (T/F)','การใช้ชีวิต (J/P)'];
+const M_PG=8,M_NP=6;
+const M_QA=[
+['E|ฉันได้พลังงานเมื่อได้อยู่กับผู้คนหลายๆ คน','E|ฉันเริ่มคุยกับคนแปลกหน้าได้ง่าย','E|ฉันชอบคิดโดยพูดออกมาดังๆ','E|ฉันชอบวันที่ได้ออกไปทำกิจกรรมและพบปะผู้คน','E|ฉันมักเป็นคนเริ่มชวนคุยหรือชวนทำกิจกรรมในกลุ่ม','E|ฉันรู้สึกเหงาหรือเบื่อถ้าอยู่คนเดียวหลายวัน','I|หลังเข้าสังคมนานๆ ฉันต้องการเวลาอยู่คนเดียวเพื่อชาร์จพลัง','I|ฉันชอบคิดให้ตกผลึกก่อนค่อยพูด','I|ฉันมีเพื่อนสนิทไม่กี่คนและพอใจแบบนั้น','I|ฉันทำงานลำพังเงียบๆ ได้ดีกว่าทำเป็นกลุ่ม','I|ฉันมักเหนื่อยหลังงานสังสรรค์ใหญ่ๆ แม้จะสนุก','I|ฉันชอบมีโลกส่วนตัวและไม่ค่อยเล่าเรื่องตัวเองให้ใครฟัง'],
+['S|ฉันเชื่อข้อเท็จจริงที่พิสูจน์ได้มากกว่าสัญชาตญาณ','S|ฉันชอบวิธีที่ลองมาแล้วได้ผล','S|ฉันใส่ใจรายละเอียดและสิ่งที่เกิดขึ้นตรงหน้า','S|ฉันชอบคำอธิบายที่ชัดเจน ตรงตัว','S|ฉันชอบเรียนรู้จากการลงมือทำจริงมากกว่าอ่านทฤษฎี','S|ฉันจำรายละเอียดเล็กๆ ของเหตุการณ์ได้แม่น','N|ฉันมักมองหาความหมายหรือรูปแบบเบื้องหลังเรื่องต่างๆ','N|ฉันชอบจินตนาการถึงความเป็นไปได้ในอนาคต','N|ฉันเบื่อง่ายถ้าต้องทำสิ่งเดิมซ้ำๆ','N|ฉันชอบแนวคิดนามธรรมและทฤษฎี','N|ฉันมักเห็นความเชื่อมโยงที่คนอื่นไม่ทันสังเกต','N|ฉันชอบถามว่า "ถ้าเกิดว่า…" มากกว่า "ตอนนี้เป็นอย่างไร"'],
+['T|ฉันตัดสินใจด้วยเหตุผลมากกว่าความรู้สึก','T|ฉันพูดตรงๆ แม้อีกฝ่ายอาจไม่ถูกใจ','T|เวลาขัดแย้ง ฉันให้ความสำคัญกับความถูกต้องก่อน','T|ฉันมองว่าความยุติธรรมสำคัญกว่าการรักษาน้ำใจ','T|ฉันวิเคราะห์ข้อดีข้อเสียอย่างเยือกเย็นได้แม้เป็นเรื่องใกล้ตัว','T|ฉันรับคำวิจารณ์เชิงเหตุผลได้โดยไม่เอามาเป็นเรื่องส่วนตัว','F|ฉันคำนึงถึงความรู้สึกของคนอื่นก่อนตัดสินใจ','F|ฉันรับรู้อารมณ์ของคนรอบข้างได้ไว','F|ฉันเลือกถนอมน้ำใจมากกว่าพูดตรงๆ','F|ฉันตัดสินใจตามค่านิยมและหัวใจ','F|ฉันรู้สึกผิดนานถ้าทำให้ใครเสียใจ','F|ฉันมักเลือกช่วยคนก่อนแม้ไม่คุ้มในเชิงเหตุผล'],
+['J|ฉันชอบวางแผนล่วงหน้าและทำตามแผน','J|ฉันไม่สบายใจถ้างานยังค้างอยู่','J|ฉันชอบให้ทุกอย่างเป็นระเบียบ มีกำหนดเวลา','J|ฉันชอบตัดสินใจให้เสร็จเร็วๆ','J|ฉันมักมีลิสต์งานหรือตารางชีวิตที่ชัดเจน','J|ฉันรู้สึกโล่งเมื่อได้ข้อสรุป แม้ยังไม่แน่ใจที่สุด','P|ฉันชอบเปิดตัวเลือกไว้และปรับตามสถานการณ์','P|ฉันทำงานได้ดีเมื่อใกล้เดดไลน์','P|ฉันชอบความยืดหยุ่นมากกว่าตารางตายตัว','P|ฉันชอบลองสิ่งใหม่โดยไม่วางแผนมาก','P|ฉันมักเปลี่ยนแผนกลางทางถ้ามีตัวเลือกที่น่าสนใจกว่า','P|ฉันมักเก็บข้อมูลไปเรื่อยๆ จนตัดสินใจช้า']];
+/* สลับข้อ E/I ... ให้ไม่เรียงตามตัวอักษรเดียวกัน */
+const M_Q=[];(function(){const dq=M_QA.map((a,d)=>{const x=a.map(s=>{const p=s.split('|');return{l:p[0],t:p[1]};}),A=x.filter(q=>q.l===M_PAIR[d][0]),B=x.filter(q=>q.l===M_PAIR[d][1]),o=[];for(let i=0;i<A.length;i++){o.push(A[i]);o.push(B[i]);}return o;});for(let i=0;i<12;i++)for(let d=0;d<4;d++)M_Q.push(dq[d][i]);})();
+const M_N=M_Q.length,M_MAX=12*2;
+const M_RAW=[
+'INTJ|นักออกแบบ (Architect)|นักวางกลยุทธ์ มองภาพรวมระยะยาว ทะเยอทะยานและมั่นใจในเหตุผลของตัวเอง|คิดเป็นระบบ เรียนรู้เร็ว ตัดสินใจเด็ดขาด|ดื้อ วิจารณ์ตรงจนดูเย็นชา ไม่อดทนกับความไร้ประสิทธิภาพ|สถาปนิก วิศวกร นักกลยุทธ์ นักวิเคราะห์ระบบ ผู้ตรวจสอบบัญชี ไซเบอร์ซีเคียวริตี้',
+'INTP|นักตรรกะ (Logician)|นักคิดช่างสงสัย ชอบวิเคราะห์ทฤษฎีและหาเหตุผลเบื้องหลังทุกเรื่อง|คิดสร้างสรรค์ วิเคราะห์เก่ง เปิดรับไอเดียใหม่|จมอยู่กับความคิด ลังเลลงมือ สื่อสารความรู้สึกน้อย|นักวิจัย นักวิทยาศาสตร์ นักคณิตศาสตร์ นักวิเคราะห์การเงิน นักเขียน',
+'ENTJ|ผู้บัญชาการ (Commander)|ผู้นำเด็ดขาด มุ่งเป้าหมาย ชอบจัดระบบคนและงานให้เดินหน้า|เป็นผู้นำ มั่นใจ มองกลยุทธ์ ลงมือจริง|ใจร้อน เจ้ากี้เจ้าการ มองข้ามความรู้สึกคนอื่น|ผู้บริหาร นักกฎหมาย ที่ปรึกษา นักธุรกิจ นักการเมือง',
+'ENTP|นักโต้วาที (Debater)|ช่างคิดช่างถก ชอบท้าทายความเชื่อเดิม มีไหวพริบและเสน่ห์|ไอเดียแปลกใหม่ ปรับตัวไว โน้มน้าวเก่ง|เบื่อง่าย ชอบเถียง ทิ้งงานครึ่งทาง|นักการทูต โปรดิวเซอร์ ที่ปรึกษา อาจารย์ ผู้ประกอบการ นักการตลาด',
+'INFJ|ผู้แนะนำ (Advocate)|พบน้อย เงียบแต่ลึก เข้าใจคนง่าย ยึดอุดมการณ์และอยากช่วยให้โลกดีขึ้น|เห็นอกเห็นใจ หยั่งรู้ ซื่อสัตย์ มีวิสัยทัศน์|เก็บกด สมบูรณ์แบบเกินไป เหนื่อยง่ายจากการแบกอารมณ์ผู้อื่น|นักจิตวิทยา นักสังคมสงเคราะห์ นักเขียน ครู ศิลปิน บุคลากรสุขภาพ',
+'INFP|ผู้ไกล่เกลี่ย (Mediator)|อุดมคติสูง อ่อนโยน มีโลกภายในอุดมสมบูรณ์ ยึดคุณค่าของตัวเอง|จินตนาการดี จริงใจ เปิดรับความต่าง|อ่อนไหว เลี่ยงความขัดแย้ง ผัดวันประกันพรุ่ง|นักเขียน บรรณาธิการ นักออกแบบ นักจิตวิทยา ผู้กำกับ ครู',
+'ENFJ|ตัวเอก (Protagonist)|ผู้นำที่อบอุ่น มีเสน่ห์ ชอบดึงศักยภาพของผู้อื่นออกมา|สื่อสารเก่ง ใส่ใจคน จัดระเบียบกลุ่มได้ดี|ใส่ใจคนอื่นจนลืมตัวเอง รับคำวิจารณ์ยาก|HR ครู โค้ช นักประชาสัมพันธ์ ผู้จัดการ พยาบาล',
+'ENFP|นักรณรงค์ (Campaigner)|พลังล้น สร้างสีสัน กระตือรือร้น มองเห็นความเป็นไปได้ในทุกคน|สร้างสรรค์ เข้ากับคนง่าย สร้างแรงบันดาลใจ|ฟุ้งซ่าน จัดการรายละเอียดไม่ถนัด เครียดง่าย|นักจิตวิทยา นักข่าว นักการตลาด ครีเอเตอร์ ผู้ให้คำปรึกษา',
+'ISTJ|นักคำนวณ (Logistician)|ซื่อตรง น่าเชื่อถือ ยึดข้อเท็จจริงและความรับผิดชอบ เป็นไทป์ที่พบมากที่สุดกลุ่มหนึ่ง|เป็นระเบียบ ตรงเวลา อดทน|ยืดหยุ่นน้อย ต่อต้านการเปลี่ยนแปลง|นักบัญชี ผู้พิพากษา ทหาร ตำรวจ ผู้ตรวจสอบ เกษตรกร',
+'ISFJ|ผู้ตั้งรับ (Defender)|อบอุ่น ขยัน ใส่ใจรายละเอียด คอยดูแลคนใกล้ชิดเงียบๆ|ไว้ใจได้ ช่างสังเกต รักษาสัญญา|ไม่กล้าปฏิเสธ แบกภาระคนเดียว กลัวการเปลี่ยนแปลง|พยาบาล ครู นักสังคมสงเคราะห์ ผู้ดูแล งานธุรการ',
+'ESTJ|ผู้บริหาร (Executive)|จัดระเบียบเก่ง ยึดกฎและความถูกต้อง เป็นหลักให้ทีม|เด็ดขาด ตรงไปตรงมา ทำงานเป็นระบบ|แข็งกร้าว ตัดสินคนจากมาตรฐานตัวเอง|ผู้จัดการ ผู้ตรวจสอบบัญชี ธนาคาร ทหาร ผู้พิพากษา',
+'ESFJ|ผู้ให้คำปรึกษา (Consul)|เป็นมิตร ใส่ใจผู้อื่น ชอบสร้างความปรองดองในกลุ่ม|ใจดี ร่วมมือเก่ง ทุ่มเท|ห่วงภาพลักษณ์ ไวต่อคำวิจารณ์ อยากได้การยอมรับ|พยาบาล HR ครู ผู้จัดการ ที่ปรึกษา งานบริการ',
+'ISTP|ผู้เชี่ยวชาญ (Virtuoso)|ช่างสังเกต ใจเย็น ชอบลงมือแก้ปัญหาและเข้าใจว่าสิ่งต่างๆ ทำงานอย่างไร|ปฏิบัติจริง ใจเย็นยามวิกฤต ยืดหยุ่น|ปิดตัว เลี่ยงการผูกมัด เสี่ยงโดยไม่คิดนาน|ช่างเทคนิค โปรแกรมเมอร์ นักกีฬา วิศวกร นักบิน',
+'ISFP|นักผจญภัย (Adventurer)|ศิลปินใจสงบ รักอิสระ อ่อนโยน ใช้ชีวิตตามความรู้สึกของตัวเอง|มีรสนิยม ปรับตัวง่าย ใจดี|เก็บอารมณ์ วางแผนระยะยาวน้อย เครียดกับการแข่งขัน|นักดนตรี ช่างภาพ ดีไซเนอร์ ช่างแต่งหน้า นักเขียน',
+'ESTP|ผู้ประกอบการ (Entrepreneur)|กล้าลุย เข้าสังคมเก่ง ตัดสินใจไว ชอบความท้าทายในโลกจริง|ไหวพริบดี รับมือเฉพาะหน้าเก่ง โน้มน้าวเก่ง|ใจร้อน เสี่ยงเกินไป เบื่อทฤษฎี|นายหน้า นักลงทุน พิธีกร ตำรวจ โค้ชกีฬา เซลส์',
+'ESFP|ผู้มอบความบันเทิง (Entertainer)|ร่าเริง เป็นกันเอง ชอบใช้ชีวิตให้สนุกและทำให้คนรอบตัวมีความสุข|มีเสน่ห์ มองโลกบวก กล้าแสดงออก|ไม่ชอบวางแผน อารมณ์อ่อนไหว ใช้จ่ายตามใจ|นักแสดง นักออกแบบแฟชั่น ผู้จัดอีเวนต์ ครูประถม งานบริการ'];
+const M_T={};M_RAW.forEach(s=>{const p=s.split('|');M_T[p[0]]={c:p[0],n:p[1],s:p[2],g:p[3],w:p[4],j:p[5]};});
+/* รายละเอียดเชิงลึก: ความคิด | ความสัมพันธ์ | ตอนเครียด/แนวทางพัฒนา */
+const M_EXT={
+INTJ:'มองทุกเรื่องเป็นระบบและตั้งมาตรฐานสูงทั้งกับตัวเองและผู้อื่น ชอบวางแผนระยะยาวแล้วทำให้สำเร็จตามเป้า ทำงานลำพังได้ดีมาก|เลือกคนน้อยแต่ลึก แสดงความรักด้วยการกระทำและการช่วยแก้ปัญหา มากกว่าคำหวาน ควรฝึกบอกความรู้สึกตรงๆ|เมื่อเครียดอาจหมกมุ่นกับรายละเอียดทางประสาทสัมผัสหรือหุนหันพลันแล่น ควรฝึกรับฟังความเห็นผู้อื่นและยอมรับว่าแผนไม่ต้องสมบูรณ์แบบ',
+INTP:'ต้องเข้าใจ "ทำไม" ของทุกอย่างก่อนจะเชื่อ ชอบแตกปัญหาเป็นชิ้นเล็กๆ และสร้างโมเดลในหัว มักเก่งในหัวข้อที่สนใจลึกมากๆ|เป็นเพื่อนที่ซื่อและเปิดกว้าง แต่ต้องการพื้นที่ส่วนตัวมาก มักไม่ถนัดแสดงอารมณ์ ควรบอกคนใกล้ชิดว่าคิดอะไรอยู่|เมื่อเครียดอาจอ่อนไหวหรือรู้สึกว่าไม่มีใครเข้าใจ ควรฝึกลงมือทำให้เสร็จแม้ยังไม่สมบูรณ์ และใส่ใจความรู้สึกของคนรอบข้าง',
+ENTJ:'เห็นช่องว่างระหว่างปัจจุบันกับเป้าหมายอย่างรวดเร็ว แล้วจัดคนจัดทรัพยากรให้ไปถึง ชอบการแข่งขันและความท้าทาย|ตรงไปตรงมาและคาดหวังสูงกับคู่รัก ควรฝึกรับฟังความรู้สึกและให้เวลาคนอื่นตามทัน|เมื่อเครียดอาจอ่อนไหวเกินปกติหรือรู้สึกไม่ถูกยอมรับ ควรผ่อนจังหวะ เปิดรับการช่วยเหลือ และชื่นชมคนในทีม',
+ENTP:'คิดเชื่อมโยงไอเดียได้ไว ชอบถกเถียงเพื่อทดสอบความคิด ไม่ใช่เพื่อเอาชนะ เบื่อกิจวัตรและมองหาแนวทางใหม่เสมอ|สนุก มีอารมณ์ขัน ชอบคู่ที่คุยท้าทายได้ แต่ต้องระวังการแซวหรือเถียงจนอีกฝ่ายรู้สึกถูกลดค่า และอย่าลืมรักษาสัญญา|เมื่อเครียดอาจจมอยู่กับรายละเอียดหรือกังวลเกินเหตุ ควรเลือกโครงการหลักไม่กี่อย่างแล้วทำให้จบ ฝึกวินัยและการติดตามผล',
+INFJ:'จับรูปแบบของคนและเหตุการณ์ได้ลึกด้วยสัญชาตญาณ ตั้งใจให้งานมีความหมายต่อผู้อื่น มักมีวิสัยทัศน์ชัดแต่เก็บไว้ในใจ|ต้องการความสัมพันธ์ที่จริงใจและลึก ใส่ใจคู่มากจนอาจละเลยตัวเอง ควรกล้าพูดความต้องการและกำหนดขอบเขต|เมื่อเครียดอาจเก็บตัวแล้วระเบิดอารมณ์ หรือหันไปพึ่งสิ่งกระตุ้นทางกาย ควรพักจากอารมณ์คนอื่นและยอมรับความไม่สมบูรณ์แบบ',
+INFP:'ใช้คุณค่าภายในเป็นเข็มทิศ ต้องการให้งานและชีวิตสอดคล้องกับตัวตน เห็นความเป็นไปได้และศักยภาพในผู้คน|อ่อนโยนและซื่อสัตย์ต่อความรู้สึก ต้องการคนที่ยอมรับตัวตนจริง แต่เลี่ยงการเผชิญหน้าจนปัญหาสะสม ควรพูดตรงๆ ให้เร็วขึ้น|เมื่อเครียดอาจวิจารณ์ตัวเองหรือเข้มงวดผิดปกติ ควรแบ่งงานเป็นขั้นเล็กๆ ตั้งเดดไลน์ และเริ่มลงมือก่อนรู้สึกพร้อม',
+ENFJ:'อ่านอารมณ์และแรงจูงใจของคนได้ไว ชอบพัฒนาคนและสร้างบรรยากาศร่วมมือ เป็นผู้นำที่ให้กำลังใจ|ทุ่มเทและใส่ใจความรู้สึกคู่มาก แต่อาจคาดหวังให้อีกฝ่ายใส่ใจเท่ากัน ควรบอกความต้องการของตัวเองตรงๆ|เมื่อเครียดอาจวิจารณ์ตัวเองด้วยตรรกะเย็นชาหรือจับผิดคนอื่น ควรแยกคุณค่าตัวเองออกจากความพอใจของผู้อื่น และเว้นเวลาพัก',
+ENFP:'สนใจผู้คนและความเป็นไปได้ใหม่ๆ เริ่มโครงการได้ง่ายและสร้างแรงบันดาลใจ ต้องการงานที่มีอิสระและความหมาย|ให้ความอบอุ่นและความตื่นเต้นแก่ความสัมพันธ์ ต้องการความจริงใจและอิสระ อาจเปลี่ยนความสนใจเร็ว ควรตามงานและคำสัญญาให้จบ|เมื่อเครียดอาจจมกับรายละเอียดหรือกังวลเรื่องร่างกาย/ความเสี่ยง ควรสร้างกิจวัตรง่ายๆ และเลือกเรื่องสำคัญไม่กี่อย่าง',
+ISTJ:'ทำงานเป็นขั้นตอนอย่างแม่นยำ ใช้ประสบการณ์เป็นหลักฐาน ให้ความสำคัญกับหน้าที่และคำพูดที่ให้ไว้|แสดงความรักด้วยความรับผิดชอบและความมั่นคง อาจไม่ถนัดพูดความรู้สึก ควรบอกชื่นชมคนใกล้ตัวให้ชัดเจน|เมื่อเครียดอาจคิดเรื่องร้ายที่สุดเกินจริง ควรลองเปิดรับวิธีใหม่ๆ ทีละน้อยและเตือนตัวเองว่าความไม่แน่นอนไม่ใช่ภัยเสมอไป',
+ISFJ:'จำรายละเอียดของคนและสถานการณ์ได้ดี ดูแลผู้อื่นอย่างเงียบๆ ต้องการความมั่นคงและสภาพแวดล้อมที่คาดเดาได้|อบอุ่นและภักดี ใส่ใจความต้องการคนใกล้ชิดมากกว่าของตน ควรฝึกปฏิเสธและขอความช่วยเหลือ|เมื่อเครียดอาจคิดล่วงหน้าถึงสถานการณ์เลวร้าย ควรลองประสบการณ์ใหม่แบบเล็กๆ และยอมรับว่าไม่ต้องรับผิดชอบทุกคน',
+ESTJ:'จัดระบบ กำหนดกฎ และผลักดันงานให้เสร็จตามเป้า เชื่อในประสิทธิภาพและความรับผิดชอบ|จริงจังกับหน้าที่ในครอบครัว แสดงความรักด้วยการดูแลเรื่องปฏิบัติ อาจดูเข้มงวด ควรเปิดใจรับความเห็นต่างและความรู้สึก|เมื่อเครียดอาจหวั่นไหวกับความเป็นไปได้ที่ไม่รู้ ควรรับฟังไอเดียใหม่ๆ และยืดหยุ่นกับวิธีที่ไม่คุ้นเคย',
+ESFJ:'ใส่ใจความต้องการของผู้คนและสร้างความกลมเกลียวในกลุ่ม ชอบบทบาทที่ได้ดูแลและจัดการ มีความรับผิดชอบสูง|ให้ความอบอุ่นและเอาใจใส่ ต้องการความรู้สึกว่าถูกชื่นชม ควรฝึกรับคำวิจารณ์โดยไม่รู้สึกเป็นการปฏิเสธ|เมื่อเครียดอาจจับผิดตัวเองหรือคนอื่นด้วยตรรกะแข็งๆ ควรกำหนดขอบเขต พักผ่อน และแยกคุณค่าตัวเองออกจากการยอมรับของผู้อื่น',
+ISTP:'สังเกตอย่างเงียบๆ แล้วลงมือแก้ปัญหาด้วยเครื่องมือและเหตุผลเชิงปฏิบัติ ชอบอิสระและงานที่เห็นผลจริง|ไม่ชอบถูกควบคุม แสดงความใส่ใจด้วยการช่วยลงมือ มักพูดความรู้สึกน้อย ควรบอกให้อีกฝ่ายรู้ว่าอยู่ตรงนั้นเพื่อเขา|เมื่อเครียดอาจอ่อนไหวและรู้สึกไม่ถูกยอมรับ ควรสื่อสารอารมณ์ให้เร็วขึ้นและวางแผนล่วงหน้าบ้าง',
+ISFP:'ใช้ชีวิตตามค่านิยมและประสาทสัมผัส รักความงามและอิสระ แสดงตัวตนผ่านการลงมือและงานสร้างสรรค์มากกว่าคำพูด|อ่อนโยน ยืดหยุ่น ไม่ชอบความขัดแย้ง ควรบอกความต้องการจริงของตนแทนการเก็บไว้|เมื่อเครียดอาจเข้มงวดและวิจารณ์เกินปกติ ควรตั้งเป้าหมายระยะกลางง่ายๆ และขอคำแนะนำจากคนที่ไว้ใจ',
+ESTP:'อยู่กับปัจจุบันและตอบสนองสถานการณ์ได้ไวมาก ชอบลงมือ ทดลอง และเรียนรู้จากของจริง รับมือวิกฤตได้ดี|ตรงไปตรงมา สนุก ชอบกิจกรรมร่วมกัน ควรฝึกคิดถึงผลระยะยาวและความรู้สึกคู่|เมื่อเครียดอาจกังวลหรือเห็นภาพอนาคตแง่ร้ายเกินจริง ควรหยุดคิดถึงผลระยะยาวก่อนลงมือและเว้นเวลาพัก',
+ESFP:'อยู่กับปัจจุบันและเรียนรู้จากประสบการณ์ตรง เข้ากับคนง่าย สร้างบรรยากาศสนุกและอบอุ่น ใส่ใจความรู้สึกคนรอบตัว|ให้ความอบอุ่นและเสียงหัวเราะ ต้องการคนที่ยอมรับตัวตนจริง ควรฝึกวางแผนเรื่องเงินและระยะยาว|เมื่อเครียดอาจกลัวอนาคตหรือหมกมุ่นกับสิ่งที่อาจผิดพลาด ควรเริ่มวางแผนเล็กๆ และขอความเห็นจากคนที่เชื่อใจ'};
+const M_STK={INTJ:'Ni-Te-Fi-Se',INTP:'Ti-Ne-Si-Fe',ENTJ:'Te-Ni-Se-Fi',ENTP:'Ne-Ti-Fe-Si',INFJ:'Ni-Fe-Ti-Se',INFP:'Fi-Ne-Si-Te',ENFJ:'Fe-Ni-Se-Ti',ENFP:'Ne-Fi-Te-Si',ISTJ:'Si-Te-Fi-Ne',ISFJ:'Si-Fe-Ti-Ne',ESTJ:'Te-Si-Ne-Fi',ESFJ:'Fe-Si-Ne-Ti',ISTP:'Ti-Se-Ni-Fe',ISFP:'Fi-Se-Ni-Te',ESTP:'Se-Ti-Fe-Ni',ESFP:'Se-Fi-Te-Ni'};
+const M_FD={Ne:'จินตนาการและเชื่อมโยงไอเดียกับความเป็นไปได้ภายนอก',Ni:'หยั่งรู้ภาพอนาคตและรูปแบบเบื้องหลังจากภายใน',Se:'ตื่นตัวกับปัจจุบัน ประสาทสัมผัส และการลงมือทันที',Si:'จดจำประสบการณ์ รายละเอียด และสิ่งที่เคยได้ผล',Te:'จัดระบบ วัดผล และตัดสินใจด้วยตรรกะภายนอก',Ti:'วิเคราะห์หลักการและความสอดคล้องเชิงเหตุผลในใจ',Fe:'อ่านอารมณ์ผู้อื่นและรักษาความกลมเกลียวของกลุ่ม',Fi:'ยึดค่านิยมและความรู้สึกที่แท้จริงของตัวเอง'};
+const M_FR=['ตัวนำ — ใช้คล่องและเป็นธรรมชาติที่สุด','ตัวสนับสนุน — ช่วยถ่วงดุลตัวนำ','ตัวรอง — พัฒนาช้า ใช้ผ่อนคลาย','จุดอ่อน — ใช้ยากสุด แต่เป็นพื้นที่เติบโต'];
+const M_LD={E:'ได้พลังจากการพบปะและกิจกรรมภายนอก คิดผ่านการพูดคุย ชอบมีส่วนร่วม มักเป็นฝ่ายเริ่มต้น',I:'ได้พลังจากเวลาส่วนตัวและโลกความคิดภายใน คิดก่อนพูด ชอบความลึกมากกว่าความกว้างในความสัมพันธ์',S:'เชื่อข้อมูลที่จับต้องได้ ชอบขั้นตอนชัดเจน ใส่ใจรายละเอียด เรียนรู้จากประสบการณ์จริง',N:'มองหารูปแบบ ความหมาย และความเป็นไปได้ ชอบแนวคิดและอนาคต เบื่อกิจวัตรซ้ำๆ',T:'ตัดสินจากตรรกะ ความเป็นธรรม และความถูกต้อง สื่อสารตรงไปตรงมา',F:'ตัดสินจากคุณค่า ความรู้สึก และผลต่อผู้คน ใส่ใจความกลมเกลียวและน้ำใจ',J:'ชอบวางแผน ตัดสินใจแล้วปิดงาน ชอบความแน่นอนและตารางที่ชัดเจน',P:'ชอบเปิดตัวเลือก ปรับตามสถานการณ์ เก็บข้อมูลไปเรื่อยๆ ทำงานได้ดีเมื่อใกล้เดดไลน์'};
+const M_DIFF=['ลองดูว่าหลังวันที่เจอคนมากๆ คุณ "เติมพลัง" หรือ "หมดพลัง" — ใช้ดูแทนการดูว่าพูดเก่งหรือไม่','ถามตัวเองว่าเวลาเรียนเรื่องใหม่ คุณเริ่มจากตัวอย่างและขั้นตอนจริง (S) หรือจากภาพรวมและแนวคิด (N)','ดูว่าตอนตัดสินใจยากๆ คุณเอา "ความถูกต้องเป็นธรรม" (T) หรือ "ผลกระทบต่อคนที่เกี่ยวข้อง" (F) ขึ้นมาก่อน — ไม่ใช่ดูว่าคุณมีหัวใจหรือไม่','ดูว่าคุณสบายใจเมื่อ "ตัดสินใจแล้วจบ" (J) หรือเมื่อ "ยังเปิดตัวเลือกอยู่" (P) — ไม่ใช่ดูว่าห้องรกหรือไม่'];
+const mLvl=p=>p<55?['กึ่งกลางมาก','#ff9f43']:p<65?['โน้มเอียงเล็กน้อย','#ffcb6b']:p<80?['ชัดเจน','#7c6aff']:['เด่นมาก','#00e5a0'];
+const mFx=p=>p<55?'คุณใช้ทั้งสองขั้วได้ใกล้เคียงกัน ผลด้านนี้ไม่แน่นอน ควรอ่านไทป์ใกล้เคียงด้านล่างประกอบ':p<65?'คุณโน้มไปทางนี้แต่ไม่แรง หลายสถานการณ์อาจใช้อีกขั้วได้เหมือนกัน':p<80?'แนวโน้มชัดเจน มักแสดงออกในชีวิตประจำวัน':'แนวโน้มแรงมาก แทบเป็นธรรมชาติของคุณในด้านนี้';
+const mGrp=c=>c[1]==='N'?(c[2]==='T'?'นักวิเคราะห์':'นักการทูต'):(c[3]==='J'?'ผู้เฝ้ายาม':'นักสำรวจ');
+const mParse=t=>String(t||'').split(',').filter(Boolean).map(s=>({l:s[0],p:+s.slice(1)||50}));
+function mScore(){
+  const s=[0,0,0,0];
+  M_Q.forEach((q,i)=>{const v=(M.a[i]||3)-3,d=M_PAIR.findIndex(p=>p.includes(q.l));s[d]+=q.l===M_PAIR[d][0]?v:-v;});
+  const sc=s.map((x,d)=>({l:x>0?M_PAIR[d][0]:M_PAIR[d][1],p:Math.round(50+Math.abs(x)/M_MAX*50),tie:x===0}));
+  return{type:sc.map(x=>x.l).join(''),sc:sc};
+}
+function mStackHtml(c){
+  const f=(M_STK[c]||'').split('-');if(f.length<4)return'';
+  return `<div class="sec-title">🧬 ลำดับฟังก์ชันความคิด (Cognitive Functions) · ${esc(M_STK[c])}</div>`+f.map((x,i)=>`<div class="rp"><b>${i+1}. ${x}</b> — ${esc(M_FD[x]||'')}<br><span class="sm">${M_FR[i]}</span></div>`).join('');
+}
+function mTypeHtml(t){
+  const e=(M_EXT[t.c]||'').split('|');
+  return `<div class="rp">${esc(t.s)}</div>${e[0]?`<div class="rp"><b>🧠 วิธีคิดเชิงลึก:</b> ${esc(e[0])}</div>`:''}<div class="rp"><b>💪 จุดแข็ง:</b> ${esc(t.g)}</div><div class="rp"><b>⚠️ จุดควรระวัง:</b> ${esc(t.w)}</div>${e[1]?`<div class="rp"><b>❤️ ความสัมพันธ์:</b> ${esc(e[1])}</div>`:''}${e[2]?`<div class="rp"><b>🌱 ตอนเครียด/แนวทางพัฒนา:</b> ${esc(e[2])}</div>`:''}<div class="rp"><b>💼 อาชีพที่มักเหมาะ:</b> ${esc(t.j)}</div>${mStackHtml(t.c)}`;
+}
+function mNear(r){
+  const idx=r.sc.map((x,d)=>d).filter(d=>r.sc[d].p<65).sort((a,b)=>r.sc[a].p-r.sc[b].p).slice(0,3);
+  if(!idx.length)return`<div class="sumbox">✅ ทั้ง 4 ด้านคะแนนค่อนข้างชัด (65% ขึ้นไป) ผลนี้จึงค่อนข้างน่าเชื่อถือสำหรับแบบทดสอบนี้</div>`;
+  const out=idx.map(d=>{const c=r.type.split('');c[d]=c[d]===M_PAIR[d][0]?M_PAIR[d][1]:M_PAIR[d][0];const k=c.join('');return{d,k};});
+  return`<div class="sec-title">🔍 ไทป์ใกล้เคียงที่เป็นไปได้</div><div class="sumbox">ด้านที่คะแนนไม่ขาด อาจทำให้ไทป์จริงเป็นแบบอื่นได้:${out.map(o=>{const t=M_T[o.k]||{n:''};return`<div style="margin-top:8px"><b style="color:var(--a)">${o.k}</b> ${esc(t.n)} <span class="sm">(ต่างที่ ${M_DIM[o.d]} · คุณได้ ${r.sc[o.d].l} ${r.sc[o.d].p}%)</span><div class="sm">💡 ${esc(M_DIFF[o.d])}</div></div>`;}).join('')}</div>`;
+}
+function mAns(i,n){M.a[i]=n;const r=$('mq'+i);if(r)r.querySelectorAll('.tab').forEach((t,k)=>t.classList.toggle('on',k+1===n));}
+function mNav(d){
+  const st=M.pg*M_PG;
+  if(d>0){for(let i=st;i<st+M_PG;i++)if(!M.a[i])return say('กรุณาตอบให้ครบทุกข้อในหน้านี้');}
+  if(d>0&&M.pg===M_NP-1){M.res=mScore();S.mbti=M.res;M.retake=0;render();mSave();return;}
+  M.pg=Math.max(0,M.pg+d);render();scrollTo(0,0);
+}
+async function mSave(){
+  if(S.acct&&S.acct.role==='user'){
+    try{await api('apiMbtiSave',S.token,S.mbti.type,S.mbti.sc.map(x=>x.l+x.p).join(','));say('✅ บันทึกผล MBTI ของคุณแล้ว',1);}
+    catch(e){say('บันทึกผลไม่สำเร็จ: '+e.message);}
+  }else say('โหมด Admin/Viewer: ผลอยู่เฉพาะรอบนี้ ไม่ได้บันทึกถาวร');
+}
+async function loadMbti(){
+  try{const r=await api('apiMbtiGet',S.token);if(r)S.mbti={type:r.type,sc:mParse(r.scores)};}catch(e){}
+  render();
+}
+function mTest(){
+  if(!M.retake&&(M.res||S.mbti))return mResult();
+  const st=M.pg*M_PG,qs=M_Q.slice(st,st+M_PG),done=Object.keys(M.a).length;
+  return `<div class="card"><b>🧠 แบบทดสอบ MBTI (ฟรี) · หน้า ${M.pg+1}/${M_NP}</b>
+  <div class="sm">ตอบตามที่เป็นจริงในชีวิตประจำวัน ไม่ใช่ตามที่อยากเป็น · 1 = ไม่ตรงเลย · 3 = กลางๆ · 5 = ตรงมาก · ตอบแล้ว ${done}/${M_N}</div></div>
+  ${qs.map((q,j)=>{const i=st+j;return `<div class="h"><div>${i+1}. ${esc(q.t)}</div><div class="row" id="mq${i}" style="margin-top:6px">${[1,2,3,4,5].map(n=>`<div class="tab ${M.a[i]===n?'on':''}" onclick="mAns(${i},${n})">${n}</div>`).join('')}</div></div>`;}).join('')}
+  <div class="row">${M.pg>0?'<button class="btn o" onclick="mNav(-1)">← ก่อนหน้า</button>':''}<button class="btn g" onclick="mNav(1)">${M.pg===M_NP-1?'✨ ดูผล':'ถัดไป →'}</button></div><div class="err" id="msg"></div>`;
+}
+function mResult(){
+  const r=M.res||S.mbti,t=M_T[r.type]||{c:r.type,n:'',s:'',g:'',w:'',j:''};
+  const bar=(x,d)=>{const lv=mLvl(x.p),o=M_PAIR[d].replace(x.l,'');return`<div style="margin:10px 0"><div class="sm">${M_DIM[d]} → <b style="color:var(--a)">${esc(x.l)}</b> ${x.p}% · <b style="color:${lv[1]}">${lv[0]}</b>${x.tie?' (กึ่งกลางพอดี)':''}</div><div style="position:relative;height:8px;background:var(--s2);border-radius:99px"><div style="width:${x.p}%;height:8px;background:var(--a2);border-radius:99px"></div></div><div class="sm" style="margin-top:3px"><b>${x.l}</b>: ${esc(M_LD[x.l])}</div><div class="sm">↳ ${esc(mFx(x.p))}${x.p<65?` (อีกขั้วคือ ${o})`:''}</div></div>`;};
+  return`<div class="card"><div class="sm">ผล MBTI ของคุณ · กลุ่ม${mGrp(r.type)}</div><div class="n3" style="font-size:34px">${esc(r.type)}</div><b>${esc(t.n)}</b>
+  <div class="sumbox">${r.sc.map(bar).join('')}</div>${mNear(r)}<div class="sec-title">📋 รายละเอียดไทป์ ${esc(r.type)}</div>${mTypeHtml(t)}
+  <div class="sm" style="margin-top:8px">เปอร์เซ็นต์ใกล้ 50% แปลว่าคุณอยู่กึ่งกลางของด้านนั้น ผลอาจต่างได้เมื่อทำใหม่ในช่วงชีวิตอื่น แบบทดสอบนี้ไม่ใช่ MBTI® ฉบับทางการ</div>
+  <div class="row" style="margin-top:.6rem"><button class="btn g" onclick="S.app='tarot';R.sub='read';R.step='form';render()">🔮 ดูไพ่ยิปซี + MBTI</button><button class="btn o" onclick="M.res=null;M.a={};M.pg=0;M.retake=1;render()">🔄 ทำแบบทดสอบใหม่</button></div><div class="err" id="msg"></div></div>`;
+}
+function mInfo(){
+  const L=[['E / I','แหล่งพลังงาน: E (Extraversion) ได้พลังจากผู้คนและกิจกรรมภายนอก · I (Introversion) ได้พลังจากเวลาส่วนตัวและความคิดภายใน'],['S / N','การรับข้อมูล: S (Sensing) เชื่อข้อเท็จจริง รายละเอียด และปัจจุบัน · N (Intuition) มองภาพรวม รูปแบบ และความเป็นไปได้'],['T / F','การตัดสินใจ: T (Thinking) ใช้เหตุผลและหลักการ · F (Feeling) ใช้คุณค่าและความรู้สึกของผู้คน'],['J / P','การใช้ชีวิต: J (Judging) ชอบวางแผน เป็นระเบียบ ปิดงานเร็ว · P (Perceiving) ยืดหยุ่น เปิดตัวเลือก ปรับตามสถานการณ์']];
+  return `<div class="card"><b>📖 MBTI คืออะไร</b>
+  <div class="rp">MBTI (Myers-Briggs Type Indicator) คือแบบประเมินบุคลิกภาพที่ใช้กันทั่วโลก ต่อยอดจากแนวคิดของคาร์ล ยุง แบ่งความชอบของคนเป็น 4 คู่ตรงข้าม ได้ตัวอักษร 4 ตัวจาก 8 ตัว รวมเป็น 16 ไทป์ ใช้ทำความเข้าใจตัวเอง การสื่อสาร และแนวทางอาชีพ</div>
+  ${L.map(x=>`<div class="rp">• <b>${x[0]}</b> — ${esc(x[1])}</div>`).join('')}
+  <div class="sec-title">4 กลุ่มใหญ่</div>
+  <div class="rp">• <b>นักวิเคราะห์ (NT)</b> INTJ INTP ENTJ ENTP — เน้นเหตุผลและกลยุทธ์<br>• <b>นักการทูต (NF)</b> INFJ INFP ENFJ ENFP — เน้นคุณค่าและความสัมพันธ์<br>• <b>ผู้เฝ้ายาม (SJ)</b> ISTJ ISFJ ESTJ ESFJ — เน้นความรับผิดชอบและระเบียบ<br>• <b>นักสำรวจ (SP)</b> ISTP ISFP ESTP ESFP — เน้นการลงมือและประสบการณ์ตรง</div>
+  <div class="sec-title">🧬 ฟังก์ชันความคิด 8 แบบ</div>
+  <div class="rp">แต่ละไทป์ใช้ 4 จาก 8 ฟังก์ชันตามลำดับ: ตัวนำ → ตัวสนับสนุน → ตัวรอง → จุดอ่อน ตัวอักษร 4 ตัวบอกลำดับนี้ทางอ้อม เช่น ENTP = Ne-Ti-Fe-Si</div>
+  ${Object.keys(M_FD).map(k=>`<div class="rp">• <b>${k}</b> — ${esc(M_FD[k])}</div>`).join('')}
+  <div class="sec-title">🎯 ทำอย่างไรให้ผลแม่นขึ้น</div>
+  <div class="rp">• ตอบตามนิสัยจริงตอนไม่ต้องแสดงบทบาท (ไม่ใช่ตอนทำงานหรือตอนอยากเป็น)<br>• ดู "ความชัด" ของแต่ละด้านมากกว่าตัวอักษรอย่างเดียว ด้านที่ต่ำกว่า 60% ควรอ่านไทป์ใกล้เคียงประกอบ<br>• ลองอ่านรายละเอียดไทป์ใกล้เคียงแล้วดูว่า "จุดเครียด/จุดอ่อน" ของไทป์ไหนตรงกับตัวเองมากกว่า — ใช้แยกไทป์ได้ดีกว่าดูจุดแข็ง<br>• ทำซ้ำในช่วงเวลาต่างกันและเปรียบเทียบ</div>
+  <div class="sumbox">⚠ แบบทดสอบในหน้านี้เป็นแบบประเมินฟรีที่เขียนขึ้นเอง ไม่ใช่ MBTI® ฉบับทางการ (เครื่องหมายการค้าของ The Myers-Briggs Company) บุคลิกภาพเป็นสเปกตรัมไม่ใช่กล่องตายตัว ใช้เพื่อรู้จักตัวเอง ไม่ควรใช้ตัดสินคนหรือคัดคนเข้าทำงาน เว็บ 16Personalities ใช้โมเดล NERIS ที่ต่างจาก MBTI เดิม และเพิ่มมิติ A/T (มั่นใจ/ระวังตัว)</div>
+  <div class="sm" style="margin-top:8px">อ้างอิง: <a href="https:\/\/www.16personalities.com/th" target="_blank" rel="noopener" style="color:var(--a2)">16Personalities</a> · <a href="https:\/\/th.jobsdb.com/th/career-advice/article/mbti%E0%B8%84%E0%B9%89%E0%B8%99%E0%B8%AB%E0%B8%B2%E0%B8%9A%E0%B8%B8%E0%B8%84%E0%B8%A5%E0%B8%B4%E0%B8%81%E0%B8%A0%E0%B8%B2%E0%B8%9E" target="_blank" rel="noopener" style="color:var(--a2)">Jobsdb: MBTI 16 แบบกับอาชีพ</a></div></div>`;
+}
+function mTypes(){
+  const G=['นักวิเคราะห์','นักการทูต','ผู้เฝ้ายาม','นักสำรวจ'];
+  return G.map(g=>`<div class="sec-title">${g}</div>`+Object.keys(M_T).filter(c=>mGrp(c)===g).map(c=>{const t=M_T[c];return `<details class="card" style="padding:.6rem .9rem"><summary style="cursor:pointer"><b>${c}</b> · ${esc(t.n)}</summary>${mTypeHtml(t)}</details>`;}).join('')).join('');
+}
+function mbtiView(){
+  const T=[['test','📝 ทำแบบทดสอบ'],['info','📖 MBTI คืออะไร'],['types','🧩 16 ไทป์']];
+  return `<div class="tabs">${T.map(t=>`<div class="tab ${M.sub===t[0]?'on':''}" onclick="M.sub='${t[0]}';render()">${t[1]}</div>`).join('')}</div>`+(M.sub==='info'?mInfo():M.sub==='types'?mTypes():mTest());
+}
+;(window.__ok=window.__ok||[]).push(6);
+</script>
+<script>
+/* ===== 🌌 Birth Chart — คำนวณในหน้าเว็บเอง ไม่ใช้ AI ===== */
+(function(){const s=document.createElement('style');s.textContent=`.bct{width:100%;border-collapse:collapse;font-size:13px}.bct td,.bct th{padding:4px 6px;border-bottom:1px solid var(--bd);text-align:left}.bct th{color:var(--t2);font-weight:600;font-size:11px}`;document.head.appendChild(s);})();
+const D2R=Math.PI/180,nm=x=>((x%360)+360)%360,VS='\uFE0E';
+const BC_SG='♈♉♊♋♌♍♎♏♐♑♒♓'.split('').map(x=>x+VS);
+const BC_SN=['เมษ','พฤษภ','เมถุน','กรกฎ','สิงห์','กันย์','ตุลย์','พิจิก','ธนู','มังกร','กุมภ์','มีน'];
+const BC_PL=[['sun','☉','อาทิตย์'],['moon','☽','จันทร์'],['mer','☿','พุธ'],['ven','♀','ศุกร์'],['mar','♂','อังคาร'],['jup','♃','พฤหัสบดี'],['sat','♄','เสาร์'],['ura','♅','ยูเรนัส'],['nep','♆','เนปจูน'],['plu','♇','พลูโต'],['node','☊','ราหู (Mean Node)']].map(p=>[p[0],p[1]+VS,p[2]]);
+/* [N0,N1,i0,i1,w0,w1,a0,a1,e0,e1,M0,M1] */
+const BC_EL={
+sun:[0,0,0,0,282.9404,4.70935e-5,1,0,0.016709,-1.151e-9,356.047,0.9856002585],
+moon:[125.1228,-0.0529538083,5.1454,0,318.0634,0.1643573223,60.2666,0,0.0549,0,115.3654,13.0649929509],
+mer:[48.3313,3.24587e-5,7.0047,5e-8,29.1241,1.01444e-5,0.387098,0,0.205635,5.59e-10,168.6562,4.0923344368],
+ven:[76.6799,2.4659e-5,3.3946,2.75e-8,54.891,1.38374e-5,0.72333,0,0.006773,-1.302e-9,48.0052,1.6021302244],
+mar:[49.5574,2.11081e-5,1.8497,-1.78e-8,286.5016,2.92961e-5,1.523688,0,0.093405,2.516e-9,18.6021,0.5240207766],
+jup:[100.4542,2.76854e-5,1.303,-1.557e-7,273.8777,1.64505e-5,5.20256,0,0.048498,4.469e-9,19.895,0.0830853001],
+sat:[113.6634,2.3898e-5,2.4886,-1.081e-7,339.3939,2.97661e-5,9.55475,0,0.055546,-9.499e-9,316.967,0.0334442282],
+ura:[74.0005,1.3978e-5,0.7733,1.9e-8,96.6612,3.0565e-5,19.18171,-1.55e-8,0.047318,7.45e-9,142.5905,0.011725806],
+nep:[131.7806,3.0173e-5,1.77,-2.55e-7,272.8461,-6.027e-6,30.05826,3.313e-8,0.008606,2.15e-9,260.2471,0.005995147]};
+const BC_CITY=[
+['กรุงเทพมหานคร',13.7563,100.5018],['เชียงใหม่',18.7883,98.9853],['เชียงราย',19.9105,99.8406],['นครราชสีมา',14.9799,102.0978],['ขอนแก่น',16.4419,102.836],['อุดรธานี',17.4138,102.787],['อุบลราชธานี',15.2447,104.8472],['พิษณุโลก',16.8211,100.2659],['นครสวรรค์',15.7047,100.1372],['พระนครศรีอยุธยา',14.3532,100.5689],['ชลบุรี',13.3611,100.9847],['ระยอง',12.6814,101.2816],['หัวหิน',12.5684,99.9577],['สุราษฎร์ธานี',9.1382,99.3215],['ภูเก็ต',7.8804,98.3923],['หาดใหญ่',7.0086,100.4747],['นครศรีธรรมราช',8.4304,99.9631],['ลำปาง',18.2888,99.4909],['นนทบุรี',13.8621,100.5144],['สมุทรปราการ',13.5991,100.5998],['นครปฐม',13.8199,100.0443],['กาญจนบุรี',14.0228,99.5328],['ลพบุรี',14.7995,100.6534],['สุโขทัย',17.0056,99.8264],['ร้อยเอ็ด',16.0538,103.652],['สกลนคร',17.1664,104.1486],['นครพนม',17.4048,104.778],['ตรัง',7.5563,99.6114],['กระบี่',8.0863,98.9063],['จันทบุรี',12.6114,102.1039],['บุรีรัมย์',14.993,103.1029],['สุรินทร์',14.8818,103.4936],['ศรีสะเกษ',15.1186,104.322],['เพชรบุรี',13.1112,99.9391],
+['London',51.5074,-0.1278,'Europe/London'],['Paris',48.8566,2.3522,'Europe/Paris'],['New York',40.7128,-74.006,'America/New_York'],['Los Angeles',34.0522,-118.2437,'America/Los_Angeles'],['Tokyo',35.6762,139.6503,'Asia/Tokyo'],['Seoul',37.5665,126.978,'Asia/Seoul'],['Beijing',39.9042,116.4074,'Asia/Shanghai'],['Hong Kong',22.3193,114.1694,'Asia/Hong_Kong'],['Singapore',1.3521,103.8198,'Asia/Singapore'],['Sydney',-33.8688,151.2093,'Australia/Sydney'],['Dubai',25.2048,55.2708,'Asia/Dubai']
+].map(c=>({n:c[0],lat:c[1],lon:c[2],tz:c[3]||'Asia/Bangkok'}));
+const BC_OFF=[-12,-11,-10,-9,-8,-7,-6,-5,-4,-3.5,-3,-2,-1,0,1,2,3,3.5,4,4.5,5,5.5,5.75,6,6.5,7,8,8.75,9,9.5,10,10.5,11,12,13,14];
+const BC_ASP=[['☌',0,8,'#8a90a8','Conjunction'],['⚹',60,5,'#00e5a0','Sextile'],['□',90,7,'#ff5f6d','Square'],['△',120,7,'#00e5a0','Trine'],['☍',180,8,'#ff5f6d','Opposition']];
+const B={d:1,m:0,y:2540,h:12,mi:0,unk:false,city:'กรุงเทพมหานคร',lat:13.7563,lon:100.5018,tz:'Asia/Bangkok',tzSel:'auto',dst:'off',hs:'P',res:null};
+
+/* ---------- ดาราศาสตร์ ---------- */
+function bcKep(e,d){
+  const N=(e[0]+e[1]*d)*D2R,i=(e[2]+e[3]*d)*D2R,w=(e[4]+e[5]*d)*D2R,a=e[6]+e[7]*d,ec=e[8]+e[9]*d,M=(e[10]+e[11]*d)*D2R;
+  let E=M;for(let k=0;k<25;k++)E=M+ec*Math.sin(E);
+  const xv=a*(Math.cos(E)-ec),yv=a*Math.sqrt(1-ec*ec)*Math.sin(E),r=Math.hypot(xv,yv),u=Math.atan2(yv,xv)+w;
+  return{x:r*(Math.cos(N)*Math.cos(u)-Math.sin(N)*Math.sin(u)*Math.cos(i)),y:r*(Math.sin(N)*Math.cos(u)+Math.cos(N)*Math.sin(u)*Math.cos(i)),z:r*Math.sin(u)*Math.sin(i),r:r,M:nm(M/D2R),w:nm(w/D2R),N:nm(N/D2R)};
+}
+function bcPos(d){
+  const s=x=>Math.sin(x*D2R),c=x=>Math.cos(x*D2R),K={};
+  Object.keys(BC_EL).forEach(k=>K[k]=bcKep(BC_EL[k],d));
+  const xs=K.sun.x,ys=K.sun.y,out={sun:nm(Math.atan2(ys,xs)/D2R)};
+  /* ดวงจันทร์ + perturbation */
+  const m=K.moon,Ls=K.sun.M+K.sun.w,Lm=m.M+m.w+m.N,Ms=K.sun.M,Mm=m.M,D=Lm-Ls,F=Lm-m.N;
+  let ml=Math.atan2(m.y,m.x)/D2R,mb=Math.atan2(m.z,Math.hypot(m.x,m.y))/D2R;
+  ml+=-1.274*s(Mm-2*D)+0.658*s(2*D)-0.186*s(Ms)-0.059*s(2*Mm-2*D)-0.057*s(Mm-2*D+Ms)+0.053*s(Mm+2*D)+0.046*s(2*D-Ms)+0.041*s(Mm-Ms)-0.035*s(D)-0.031*s(Mm+Ms)-0.015*s(2*F-2*D)+0.011*s(Mm-4*D);
+  out.moon=nm(ml);
+  const Mj=K.jup.M,Msa=K.sat.M,Mu=K.ura.M;
+  ['mer','ven','mar','jup','sat','ura','nep','plu'].forEach(p=>{
+    let lon,lat,r;
+    if(p==='plu'){
+      const S=50.03+0.033459652*d,P=238.95+0.003968789*d;
+      lon=238.9508+0.00400703*d-19.799*s(P)+19.848*c(P)+0.897*s(2*P)-4.956*c(2*P)+0.61*s(3*P)+1.211*c(3*P)-0.341*s(4*P)-0.19*c(4*P)+0.128*s(5*P)-0.034*c(5*P)-0.038*s(6*P)+0.031*c(6*P)+0.02*s(S-P)-0.01*c(S-P);
+      lat=-3.9082-5.453*s(P)-14.975*c(P)+3.527*s(2*P)+1.673*c(2*P)-1.051*s(3*P)+0.328*c(3*P)+0.179*s(4*P)-0.292*c(4*P)+0.019*s(5*P)+0.1*c(5*P)-0.031*s(6*P)-0.026*c(6*P)+0.011*c(S-P);
+      r=40.72+6.68*s(P)+6.9*c(P)-1.18*s(2*P)-0.03*c(2*P)+0.15*s(3*P)-0.14*c(3*P);
+    }else{
+      const k=K[p];lon=Math.atan2(k.y,k.x)/D2R;lat=Math.atan2(k.z,Math.hypot(k.x,k.y))/D2R;r=k.r;
+      if(p==='jup')lon+=-0.332*s(2*Mj-5*Msa-67.6)-0.056*s(2*Mj-2*Msa+21)+0.042*s(3*Mj-5*Msa+21)-0.036*s(Mj-2*Msa)+0.022*c(Mj-Msa)+0.023*s(2*Mj-3*Msa+52)-0.016*s(Mj-5*Msa-69);
+      if(p==='sat'){lon+=0.812*s(2*Mj-5*Msa-67.6)-0.229*c(2*Mj-4*Msa-2)+0.119*s(Mj-2*Msa-3)+0.046*s(2*Mj-6*Msa-69)+0.014*s(Mj-3*Msa+32);lat+=-0.02*c(2*Mj-4*Msa-2)+0.018*s(2*Mj-6*Msa-49);}
+      if(p==='ura')lon+=0.04*s(Msa-2*Mu+6)+0.035*s(Msa-3*Mu+33)-0.015*s(Mj-Mu+20);
+    }
+    const xh=r*c(lat)*c(lon),yh=r*c(lat)*s(lon);
+    out[p]=nm(Math.atan2(yh+ys,xh+xs)/D2R);
+  });
+  return out;
+}
+function bcHouses(hs,asc,mc,th,eps,lat){
+  const eR=eps*D2R,phi=lat*D2R;
+  if(hs==='W'){const a=Math.floor(asc/30)*30;return Array.from({length:12},(_,i)=>nm(a+30*i));}
+  if(hs==='E')return Array.from({length:12},(_,i)=>nm(asc+30*i));
+  if(Math.abs(lat)>66)return null;
+  const lamOf=ra=>Math.atan2(Math.sin(ra*D2R),Math.cos(ra*D2R)*Math.cos(eR));
+  const pc=(off,k,noct)=>{let ra=th+off;
+    for(let n=0;n<40;n++){const dec=Math.asin(Math.sin(eR)*Math.sin(lamOf(ra))),x=Math.max(-1,Math.min(1,-Math.tan(phi)*Math.tan(dec))),sda=Math.acos(x)/D2R;ra=noct?th+180-k*(180-sda):th+k*sda;}
+    return nm(lamOf(ra)/D2R);};
+  const c11=pc(30,1/3,0),c12=pc(60,2/3,0),c2=pc(120,2/3,1),c3=pc(150,1/3,1);
+  return[asc,c2,c3,nm(mc+180),nm(c11+180),nm(c12+180),nm(asc+180),nm(c2+180),nm(c3+180),mc,c11,c12];
+}
+const bcHouseOf=(l,c)=>{for(let i=0;i<12;i++){const a=c[i],b=c[(i+1)%12];if(nm(l-a)<nm(b-a))return i+1;}return 1;};
+function bcTzOff(tz,ms){
+  const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'}),p={};
+  f.formatToParts(new Date(ms)).forEach(x=>p[x.type]=+x.value);
+  return(Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(ms/1000)*1000)/60000;
+}
+function bcCompute(){
+  const ce=B.y-543,h=B.unk?12:B.h,mi=B.unk?0:B.mi,base=Date.UTC(ce,B.m,B.d,h,mi);
+  let off,tzTxt;
+  if(B.tzSel==='auto'){
+    const tz=B.tz||'';
+    if(tz){let o=bcTzOff(tz,base);o=bcTzOff(tz,base-o*60000);off=o;tzTxt=tz;}
+    else{off=Math.round(B.lon/15)*60;tzTxt='ประมาณจากลองจิจูด (กรุณาเลือก Timezone เองเพื่อความแม่นยำ)';}
+  }else{off=(+B.tzSel+(B.dst==='on'?1:0))*60;tzTxt='กำหนดเอง';}
+  const ms=base-off*60000,JD=ms/864e5+2440587.5,d=JD-2451543.5,T=(JD-2451545)/36525;
+  const p1=bcPos(d),p2=bcPos(d+0.5);
+  p1.node=nm(125.04452-1934.136261*T);
+  const eps=23.439291-0.0130042*T;
+  let asc=null,mc=null,cusps=null,note='';
+  if(!B.unk&&Math.abs(B.lat)<=89){
+    const th=nm(280.46061837+360.98564736629*(JD-2451545)+0.000387933*T*T-T*T*T/38710000+B.lon),tR=th*D2R,eR=eps*D2R,ph=B.lat*D2R;
+    asc=nm(Math.atan2(Math.cos(tR),-(Math.sin(tR)*Math.cos(eR)+Math.tan(ph)*Math.sin(eR)))/D2R);
+    mc=nm(Math.atan2(Math.sin(tR),Math.cos(tR)*Math.cos(eR))/D2R);
+    cusps=bcHouses(B.hs,asc,mc,th,eps,B.lat);
+    if(!cusps){cusps=bcHouses('E',asc,mc,th,eps,B.lat);note='ละติจูดสูงเกิน 66° ระบบ Placidus คำนวณไม่ได้ จึงใช้ Equal House แทน';}
+  }
+  const pl=BC_PL.map(p=>{const l=p1[p[0]],dl=nm(p2[p[0]]-l+180)-180;
+    return{k:p[0],g:p[1],n:p[2],l:l,r:p[0]!=='sun'&&p[0]!=='moon'&&p[0]!=='node'&&dl<0,h:cusps?bcHouseOf(l,cusps):0};});
+  const asp=[],bd=pl.filter(x=>x.k!=='node');
+  for(let i=0;i<bd.length;i++)for(let j=i+1;j<bd.length;j++){
+    let df=Math.abs(bd[i].l-bd[j].l);if(df>180)df=360-df;
+    for(const a of BC_ASP){const o=Math.abs(df-a[1]);if(o<=a[2]){asp.push({a:bd[i],b:bd[j],t:a,o:o});break;}}
+  }
+  return{pl:pl,asc:asc,mc:mc,cusps:cusps,asp:asp,off:off,tzTxt:tzTxt,utc:new Date(ms),note:note,unk:B.unk};
+}
+
+/* ---------- วาดวงดวง (SVG) ---------- */
+function bcSvg(c){
+  const W=560,cx=280,cy=280,R1=250,R2=212,R3=146,R4=116,base=c.asc==null?0:c.asc;
+  const ang=l=>(180+(l-base))*D2R,P=(l,r)=>[cx+r*Math.cos(ang(l)),cy-r*Math.sin(ang(l))],f=n=>n.toFixed(1);
+  const fill=['#ff5f6d26','#00e5a026','#ffcb6b26','#7c6aff26'],col=['#ff5f6d','#00e5a0','#ffcb6b','#9b8cff'];
+  let s=`<svg id="bsvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${W}" style="width:100%;max-width:560px;display:block;margin:auto" font-family="sans-serif"><rect width="${W}" height="${W}" rx="14" fill="#0d0f12"/>`;
+  for(let i=0;i<12;i++){
+    const pts=[];for(let k=0;k<=6;k++)pts.push(P(i*30+k*5,R1));for(let k=6;k>=0;k--)pts.push(P(i*30+k*5,R2));
+    s+=`<polygon points="${pts.map(p=>f(p[0])+','+f(p[1])).join(' ')}" fill="${fill[i%4]}" stroke="#252a38"/>`;
+    const g=P(i*30+15,(R1+R2)/2);s+=`<text x="${f(g[0])}" y="${f(g[1])}" fill="${col[i%4]}" font-size="22" text-anchor="middle" dominant-baseline="central">${BC_SG[i]}</text>`;
+  }
+  for(let l=0;l<360;l+=5){const a=P(l,R2),b=P(l,R2-(l%10?4:7));s+=`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="#3a3f5a"/>`;}
+  [R2,R3,R4].forEach(r=>s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#252a38"/>`);
+  if(c.cusps){
+    c.cusps.forEach((l,i)=>{const a=P(l,R3),b=P(l,R2),ax=i%3===0;s+=`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="${ax?'#8a90a8':'#3a3f5a'}" stroke-width="${ax?1.8:1}"/>`;
+      const n=c.cusps[(i+1)%12],m=P(l+nm(n-l)/2,R3-12);s+=`<text x="${f(m[0])}" y="${f(m[1])}" fill="#8a90a8" font-size="11" text-anchor="middle" dominant-baseline="central">${i+1}</text>`;});
+    [['AC',c.asc],['IC',nm(c.mc+180)],['DC',nm(c.asc+180)],['MC',c.mc]].forEach(a=>{const p=P(a[1],R1+13);s+=`<text x="${f(p[0])}" y="${f(p[1])}" fill="#e8eaf0" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central">${a[0]}</text>`;});
+  }
+  c.asp.forEach(a=>{const p=P(a.a.l,R4),q=P(a.b.l,R4);s+=`<line x1="${f(p[0])}" y1="${f(p[1])}" x2="${f(q[0])}" y2="${f(q[1])}" stroke="${a.t[3]}" stroke-width="1" opacity="${a.o<2?.95:.55}"/>`;});
+  const L=c.pl.slice().sort((a,b)=>a.l-b.l),n=L.length;L.forEach(p=>p.da=p.l);
+  for(let it=0;it<80;it++)for(let i=0;i<n;i++){const j=(i+1)%n,gap=nm(L[j].da-L[i].da);if(gap<8){const m=(8-gap)/2;L[i].da-=m;L[j].da+=m;}}
+  L.forEach(p=>{
+    const a=P(p.l,R2),b=P(p.l,R2-9),g=P(p.da,190),t=P(p.da,166),q=P(p.l,R4);
+    s+=`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="#e8eaf0"/><circle cx="${f(q[0])}" cy="${f(q[1])}" r="2" fill="#e8eaf0"/>`;
+    s+=`<text x="${f(g[0])}" y="${f(g[1])}" fill="#e8eaf0" font-size="20" text-anchor="middle" dominant-baseline="central">${p.g}</text>`;
+    s+=`<text x="${f(t[0])}" y="${f(t[1])}" fill="${p.r?'#ff9f43':'#8a90a8'}" font-size="10" text-anchor="middle" dominant-baseline="central">${Math.floor(nm(p.l)%30)}°${p.r?'℞':''}</text>`;
+  });
+  return s+'</svg>';
+}
+
+/* ---------- แสดงผล ---------- */
+const bcDM=x=>{const t=Math.floor(nm(x)%30*60);return Math.floor(t/60)+'°'+String(t%60).padStart(2,'0')+'′';};
+const bcSign=l=>Math.floor(nm(l)/30);
+function bcResult(c){
+  const ce=B.y-543,pad=n=>String(n).padStart(2,'0'),u=c.utc;
+  const rows=c.pl.map(p=>`<tr><td>${p.g} ${esc(p.n)}</td><td>${BC_SG[bcSign(p.l)]} ${BC_SN[bcSign(p.l)]}</td><td>${bcDM(p.l)}${p.r?' <b style="color:var(--w)">℞</b>':''}</td><td>${p.h||'—'}</td></tr>`).join('');
+  const ang=c.asc==null?'':`<tr><td><b>ASC</b> ลัคนา</td><td>${BC_SG[bcSign(c.asc)]} ${BC_SN[bcSign(c.asc)]}</td><td>${bcDM(c.asc)}</td><td>1</td></tr><tr><td><b>MC</b> กลางหาว</td><td>${BC_SG[bcSign(c.mc)]} ${BC_SN[bcSign(c.mc)]}</td><td>${bcDM(c.mc)}</td><td>10</td></tr>`;
+  const el=[0,0,0,0];c.pl.slice(0,10).forEach(p=>el[bcSign(p.l)%4]++);
+  const asp=c.asp.sort((a,b)=>a.o-b.o).map(a=>`<div class="sm">${a.a.g} ${esc(a.a.n)} ${a.t[0]} ${a.b.g} ${esc(a.b.n)} <span style="color:${a.t[3]}">${a.t[4]}</span> · ออร์บ ${a.o.toFixed(1)}°</div>`).join('')||'<div class="sm">ไม่พบมุมสัมพันธ์หลัก</div>';
+  return `<div class="sec-title">ดวงกำเนิด</div>${bcSvg(c)}
+  <div class="row" style="margin:.6rem 0"><button class="btn g" onclick="bcPng()">⬇ ดาวน์โหลดรูป PNG</button></div>
+  <div class="sumbox">📅 ${B.d} ${MONTHS[B.m]} พ.ศ. ${B.y} (ค.ศ. ${ce}) · ${c.unk?'ไม่ทราบเวลา (ใช้ 12:00 น. ไม่แสดงลัคนา/เรือนชะตา)':pad(B.h)+':'+pad(B.mi)+' น.'}<br>
+  🌍 ${esc(B.city||'-')} · ${B.lat.toFixed(4)}°, ${B.lon.toFixed(4)}° · UTC${c.off>=0?'+':''}${(c.off/60).toFixed(2).replace(/\.?0+$/,'')} (${esc(c.tzTxt)})<br>
+  🕒 UT: ${u.getUTCFullYear()}-${pad(u.getUTCMonth()+1)}-${pad(u.getUTCDate())} ${pad(u.getUTCHours())}:${pad(u.getUTCMinutes())}${c.note?'<br>⚠ '+esc(c.note):''}</div>
+  <div class="sec-title">ตำแหน่งดาว (Tropical)</div>
+  <table class="bct"><tr><th>ดาว</th><th>ราศี</th><th>องศา</th><th>เรือน</th></tr>${ang}${rows}</table>
+  <div class="sec-title">ธาตุ (ดาว 10 ดวง)</div><div class="sm">🔥 ไฟ ${el[0]} · 🌍 ดิน ${el[1]} · 💨 ลม ${el[2]} · 💧 น้ำ ${el[3]}</div>
+  <div class="sec-title">มุมสัมพันธ์ (Aspects)</div>${asp}
+  <div class="sm" style="margin-top:8px">คำนวณจากสูตรวงโคจรในหน้าเว็บ ไม่ใช้ AI · ความละเอียดราว 1–2 ลิปดาสำหรับดาวส่วนใหญ่ ดวงจันทร์คลาดได้ราว 0.1–0.3° · ใช้ราศีจักรแบบ Tropical (ตะวันตก) ไม่ใช่ไทย/นิรายนะ · ช่วงปีที่แม่นยำที่สุด ค.ศ. 1800–2100</div>`;
+}
+function bcPng(){
+  const el=$('bsvg');if(!el)return;
+  const cl=el.cloneNode(true);cl.setAttribute('width',1120);cl.setAttribute('height',1120);cl.style.maxWidth='none';
+  const img=new Image();
+  img.onload=()=>{const cv=document.createElement('canvas');cv.width=cv.height=1120;cv.getContext('2d').drawImage(img,0,0,1120,1120);
+    const a=document.createElement('a');a.download='birth-chart.png';a.href=cv.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();};
+  img.onerror=()=>say('สร้างไฟล์รูปไม่สำเร็จ ลองแคปหน้าจอแทน');
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl));
+}
+function bcCityPick(val){
+  const c=BC_CITY.filter(x=>x.n.toLowerCase()===String(val).trim().toLowerCase())[0];
+  if(!c)return;B.tz=c.tz;$('blat').value=c.lat;$('blon').value=c.lon;$('btz').value='auto';
+}
+window.BC_SR=[];
+async function bcSearch(){
+  const q=v('bcity').trim(),o=$('bsr');if(!q)return;o.innerHTML='<div class="sm">กำลังค้นหา…</div>';
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=th&q='+encodeURIComponent(q));
+    BC_SR=await r.json();
+    o.innerHTML=BC_SR.length?BC_SR.map((x,i)=>`<div class="tab" style="display:block;margin:3px 0" onclick="bcPickSr(${i})">📍 ${esc(x.display_name)}</div>`).join(''):'<div class="sm">ไม่พบเมืองนี้ กรอกละติจูด/ลองจิจูดเอง</div>';
+  }catch(e){o.innerHTML='<div class="err">ค้นหาออนไลน์ไม่ได้ ให้เลือกเมืองจากรายการหรือกรอกพิกัดเอง</div>';}
+}
+function bcPickSr(i){
+  const x=BC_SR[i],la=+x.lat,lo=+x.lon;
+  $('blat').value=la.toFixed(4);$('blon').value=lo.toFixed(4);
+  B.tz=(la>5.5&&la<20.6&&lo>97.3&&lo<105.7)?'Asia/Bangkok':'';
+  $('btz').value=B.tz?'auto':String(Math.round(lo/15));
+  $('bsr').innerHTML='<div class="sm ok">เลือกแล้ว'+(B.tz?'':' · โปรดตรวจสอบ Timezone/DST ให้ตรงกับสถานที่เกิด')+'</div>';
+}
+function bcCalc(){
+  const g=id=>$(id).value;
+  B.d=+g('bd');B.m=+g('bm');B.y=+g('by');B.unk=$('bu').checked;B.h=+g('bh');B.mi=+g('bn');
+  B.lat=parseFloat(g('blat'));B.lon=parseFloat(g('blon'));B.tzSel=g('btz');B.dst=g('bdst');B.hs=g('bhs');B.city=g('bcity');
+  const m=$('bmsg'),dt=new Date(B.y-543,B.m,B.d);
+  if(dt.getDate()!==B.d||dt.getMonth()!==B.m){m.textContent='วันเกิดไม่ถูกต้อง';return;}
+  if(!(B.lat>=-90&&B.lat<=90&&B.lon>=-180&&B.lon<=180)){m.textContent='ละติจูด/ลองจิจูดไม่ถูกต้อง';return;}
+  if(B.tzSel==='auto'&&!BC_CITY.some(x=>x.n.toLowerCase()===B.city.trim().toLowerCase()&&x.tz===B.tz)&&!B.tz){}
+  m.textContent='';
+  try{B.res=bcCompute();$('bres').innerHTML=bcResult(B.res);}catch(e){m.textContent='คำนวณไม่สำเร็จ: '+e.message;}
+}
+function chartView(){
+  const o=(a,s)=>a.map(x=>`<option value="${x[0]}" ${s==x[0]?'selected':''}>${x[1]}</option>`).join('');
+  const rng=(a,b)=>{const r=[];for(let i=a;i<=b;i++)r.push([i,String(i).padStart(2,'0')]);return r;};
+  const yr=[];for(let y=2569;y>=2300;y--)yr.push([y,y]);
+  const tzs=[['auto','Auto (ตามเมืองที่เลือก)']].concat(BC_OFF.map(h=>[h,'UTC'+(h>=0?'+':'')+h]));
+  return `<div class="card"><b>🌌 Birth Chart (ดวงกำเนิดตามหลักโหราศาสตร์)</b>
+  <div class="sm" style="margin:.5rem 0 .3rem">วัน เดือน ปีเกิด (พ.ศ.)</div>
+  <div class="row"><select class="sel" id="bd">${o(rng(1,31).map(x=>[x[0],x[0]]),B.d)}</select><select class="sel" id="bm">${o(MONTHS.map((m,i)=>[i,m]),B.m)}</select><select class="sel" id="by">${o(yr,B.y)}</select></div>
+  <div class="sm" style="margin:.2rem 0 .3rem">เวลาเกิด (เวลาท้องถิ่น)</div>
+  <div class="row" style="align-items:center"><select class="sel" id="bh">${o(rng(0,23),B.h)}</select><select class="sel" id="bn">${o(rng(0,59),B.mi)}</select>
+  <label class="sm" style="flex:2;min-width:140px"><input type="checkbox" id="bu" ${B.unk?'checked':''}> ไม่ทราบเวลาเกิด</label></div>
+  <div class="sm" style="margin:.2rem 0 .3rem">เมืองที่เกิด (พิมพ์เลือกจากรายการ หรือกดค้นหาออนไลน์)</div>
+  <div class="row"><input class="inp" id="bcity" list="bcl" style="flex:2;min-width:150px" value="${esc(B.city)}" oninput="bcCityPick(this.value)" onchange="bcCityPick(this.value)"><datalist id="bcl">${BC_CITY.map(c=>`<option value="${esc(c.n)}">`).join('')}</datalist><button class="btn o" onclick="bcSearch()">🔍 ค้นหาออนไลน์</button></div>
+  <div id="bsr"></div>
+  <div class="row"><input class="inp" id="blat" type="number" step="0.0001" placeholder="ละติจูด" value="${B.lat}" style="flex:1"><input class="inp" id="blon" type="number" step="0.0001" placeholder="ลองจิจูด" value="${B.lon}" style="flex:1"></div>
+  <div class="sm" style="margin-bottom:.4rem">พิกัดเป็นองศาทศนิยม: + = เหนือ/ตะวันออก, − = ใต้/ตะวันตก</div>
+  <div class="row"><select class="sel" id="btz">${o(tzs,B.tzSel)}</select><select class="sel" id="bdst"><option value="off" ${B.dst==='off'?'selected':''}>DST: ไม่ใช้ (Auto ใช้ฐานข้อมูลอยู่แล้ว)</option><option value="on" ${B.dst==='on'?'selected':''}>DST: +1 ชม. (เมื่อกำหนด UTC เอง)</option></select></div>
+  <div class="sm" style="margin:.2rem 0 .3rem">ระบบเรือนชะตา</div>
+  <select class="sel" id="bhs"><option value="P" ${B.hs==='P'?'selected':''}>Placidus</option><option value="W" ${B.hs==='W'?'selected':''}>Whole Sign</option><option value="E" ${B.hs==='E'?'selected':''}>Equal House</option></select>
+  <div class="err" id="bmsg"></div><button class="btn g" onclick="bcCalc()">🌌 สร้างดวงกำเนิด</button></div>
+  <div id="bres" class="card" style="${B.res?'':'display:none'}">${B.res?bcResult(B.res):''}</div>`;
+}
+/* ทำให้กล่องผลโชว์เมื่อคำนวณเสร็จ */
+const _bcCalc=bcCalc;bcCalc=function(){_bcCalc();const r=$('bres');if(r&&B.res)r.style.display='block';};
+</script>
+<script>
+/* ===== Birth Chart + AI (วางต่อท้ายบล็อก Birth Chart เดิม ก่อน </body>) ===== */
+function bcSummary(){
+  const c=B.res;if(!c)return'';
+  const nn=p=>p.n.split(' ')[0],dg=l=>Math.floor(nm(l)%30)+'°';
+  const a=c.asc==null?'ไม่ทราบเวลาเกิด (ไม่มีลัคนา/เรือน)':'ลัคนา '+BC_SN[bcSign(c.asc)]+' '+dg(c.asc)+', MC '+BC_SN[bcSign(c.mc)]+' '+dg(c.mc);
+  const t=c.pl.map(p=>nn(p)+' '+BC_SN[bcSign(p.l)]+' '+dg(p.l)+(p.r?' ถอยหลัง':'')+(p.h?' เรือน'+p.h:'')).join(', ');
+  const s=c.asp.slice().sort((x,y)=>x.o-y.o).slice(0,14).map(x=>nn(x.a)+' '+x.t[4]+' '+nn(x.b)).join(', ');
+  return a+' | '+t+' | มุมสัมพันธ์: '+s;
+}
+function bcAiBox(){
+  return `<div class="sec-title">🤖 วิเคราะห์ด้วย AI</div>
+  <div class="sm">ตำแหน่งดาวคำนวณด้วยสูตรในเว็บ AI ใช้เรียบเรียงคำทำนายเท่านั้น</div>
+  <div class="row" style="margin-top:.4rem"><button class="btn" onclick="bcAI()">🧠🌌 บุคลิกภาพ MBTI + Birth Chart (ใช้ 1 Token)</button></div>
+  <div class="err" id="baimsg"></div><div id="bai"></div>`;
+}
+const _bcR=bcResult;bcResult=function(c){return _bcR(c)+bcAiBox();};
+async function bcAI(){
+  const m=$('baimsg');m.textContent='';
+  if(!B.res){m.textContent='กรุณาสร้างดวงกำเนิดก่อน';return;}
+  if(!(S.pw||(S.acct&&S.acct.role==='user'))){m.textContent='🔒 ต้องเข้าสู่ระบบด้วยบัญชี User ก่อน';return;}
+  if(!S.pw&&S.acct.tokens<1){m.textContent='🪙 Token ไม่พอ ซื้อได้ที่แท็บ 💳 ซื้อ/ต่ออายุ';return;}
+  if(!S.mbti){m.textContent='🧠 โปรดทำแบบทดสอบ MBTI ก่อน (ยังไม่ได้หัก Token)';return;}
+  if(!confirm(S.pw?'ยืนยันให้ AI วิเคราะห์ใช่ไหม? (Admin ไม่ถูกหัก Token)':'ยืนยันให้ AI วิเคราะห์ใช่ไหม?\n\nจะหัก 1 Token ทันที (คืนให้ถ้าไม่สำเร็จ)'))return;
+  $('bai').innerHTML='<div class="sumbox">⏳ กำลังประมวลผล ใช้เวลาประมาณ 20-40 วินาที กรุณาอย่าปิดหน้านี้</div>';
+  try{
+    const d=await api('apiPersonalityReading',cred(),{mbti:S.mbti.type,born:B.d+' '+MONTHS[B.m]+' '+B.y,chart:bcSummary()});
+    if(d.tokens!=null&&S.acct)S.acct.tokens=d.tokens;
+    const pre='style="white-space:pre-line"';
+    $('bai').innerHTML=`<div class="sumbox" ${pre}>${esc(d.intro)}</div>`
+      +(d.sections||[]).map(s=>`<div class="sumbox"><b>▸ ${esc(s.title)}</b><br><span ${pre}>${esc(s.reading)}</span></div>`).join('')
+      +`<div class="sumbox"><b>💪 จุดแข็ง</b><br><span ${pre}>${esc(d.strengths)}</span></div>`
+      +`<div class="sumbox"><b>⚠️ จุดที่ควรระวัง</b><br><span ${pre}>${esc(d.cautions)}</span></div>`
+      +`<div class="sumbox"><b>💡 คำแนะนำ</b><br><span ${pre}>${esc(d.advice)}</span></div>`
+      +(d.tokens!=null?`<div class="sm">🪙 Token คงเหลือ ${d.tokens}</div>`:'');
+  }catch(e){
+    $('bai').innerHTML='';m.textContent=e.message==='MBTI_REQUIRED'?'🧠 ยังไม่มีผล MBTI ที่บันทึกไว้ กรุณาทำแบบทดสอบก่อน':'⚠ '+e.message;
+  }
+}
+</script>
+<script>
+/* ===== Patch: คำอธิบายระบบเรือน + ล็อกหน้าจอตอนใช้ AI + ยืนยันก่อนหัก Token ===== */
+
+/* 1) คำอธิบายสั้น ๆ ใต้ช่อง "ระบบเรือนชะตา" (เปลี่ยนตามที่เลือก) */
+const BC_HSN={
+  P:'Placidus: แบ่งเรือนตามเวลาที่ดาวเคลื่อนจากขอบฟ้าถึงกลางหาว ขนาดเรือนไม่เท่ากัน นิยมในโหราศาสตร์ตะวันตก ไวต่อเวลาเกิด คลาดไม่กี่นาทีดาวอาจย้ายเรือนได้',
+  W:'Whole Sign: ราศีของลัคนาคือเรือน 1 ทั้งราศี ทุกเรือนกว้าง 30° เท่ากัน ทนต่อเวลาเกิดที่คลาดเล็กน้อย เหมาะถ้าไม่แน่ใจเวลาเกิด',
+  E:'Equal House: นับจากองศาลัคนาจริง แล้วบวกทีละ 30° ทุกเรือนกว้างเท่ากัน ใช้ได้ทุกละติจูด'};
+const _cv=chartView;
+chartView=function(){return _cv().replace('<div class="err" id="bmsg">','<div class="sm" id="bhsn" style="margin:-.2rem 0 .6rem;line-height:1.6">'+BC_HSN[B.hs]+'</div><div class="err" id="bmsg">');};
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='bhs'){const n=$('bhsn');if(n)n.textContent=BC_HSN[e.target.value];}});
+
+/* 2) คำอธิบายปุ่มในแท็บไพ่ยิปซี */
+const _rv=rView;
+rView=function(){return _rv().replace('<div class="err" id="rmsg"></div>','<div class="sumbox" style="margin:.5rem 0;line-height:1.7">🔮 <b>ทำนายดวง (ฟรี)</b> อ่านจากไพ่ที่เปิดได้ ไม่ใช้ AI<br>🔮🧠 <b>ไพ่ + MBTI</b> AI ปรับคำทำนายให้เข้ากับบุคลิกของคุณ (ต้องทำ MBTI ก่อน)<br>🔮🧠🌌 <b>ไพ่ + MBTI + Birth Chart</b> AI ผสานไพ่ บุคลิก และตำแหน่งดาวตอนเกิด (ต้องทำ MBTI และสร้างดวงในแท็บ Birth Chart ก่อน)<br>🔮🌌 <b>ไพ่ + Birth Chart</b> AI ผสานไพ่กับตำแหน่งดาวตอนเกิด (ต้องสร้างดวงก่อน)</div><div class="err" id="rmsg"></div>');};
+
+/* 3) ล็อกหน้าจอตอนรอ AI + เตือนถ้าพยายามปิดหน้า */
+function aiLock(on){
+  let e=$('aiov');
+  if(!on){if(e)e.remove();document.body.style.overflow='';window.onbeforeunload=null;return;}
+  if(!e){e=document.createElement('div');e.id='aiov';e.className='ov';
+    e.innerHTML='<div class="spin"></div><div class="t1">กำลังประมวลผลคำทำนายจาก AI</div><div class="t2">ใช้เวลาประมาณ 20-40 วินาที<br>กรุณาอย่าปิดหรือรีเฟรชหน้านี้</div>';
+    document.body.appendChild(e);}
+  document.body.style.overflow='hidden';
+  window.onbeforeunload=ev=>{ev.preventDefault();ev.returnValue='';return '';};
+}
+/* หน้าไพ่มี overlay ของตัวเองอยู่แล้ว เพิ่มเฉพาะการเตือนตอนปิดหน้า */
+const _rAI=rAI;
+rAI=async function(){
+  window.onbeforeunload=ev=>{ev.preventDefault();ev.returnValue='';return '';};
+  try{await _rAI();}finally{window.onbeforeunload=null;}
+};
+
+/* 4) ข้อความยืนยันก่อนใช้ AI (บอกว่าทำอะไร / หัก Token / ใช้เวลา / ห้ามปิดหน้า) */
+function aiCfm(what){
+  return '🤖 ยืนยันใช้ AI '+what+' ใช่ไหม?\n\n'
+   +(S.pw?'• Admin ไม่ถูกหัก Token':'• หัก 1 Token ทันที (คืนให้อัตโนมัติถ้า AI ทำนายไม่สำเร็จ)')
+   +'\n• ใช้เวลาประมาณ 20-40 วินาที\n• ระหว่างรอ หน้าจอจะถูกล็อก กรุณาอย่าปิดหรือรีเฟรชหน้านี้\n\nกด OK เพื่อดำเนินการต่อ';
+}
+function rReveal(){
+  if(R.mode==='ai'&&!confirm(aiCfm('ทำนายไพ่'+(R.mbtiOn?' + MBTI':'')+(R.chartOn?' + Birth Chart':''))))return;
+  const r=new Uint8Array(R.n);crypto.getRandomValues(r);
+  R.out=R.pick.map((p,i)=>({c:TAROT[R.deck[p]],rev:(r[i]&1)===1}));
+  R.ai=null;R.step='result';render();if(R.mode==='ai')rAI();
+}
+function rAskAI(){
+  if(!(S.pw||(S.acct&&S.acct.role==='user'))){R.ai={err:'login'};render();return;}
+  if(!S.pw&&S.acct.tokens<1){R.ai={err:'Token ไม่พอ ซื้อ Token ได้ที่แท็บ 💳 ซื้อ/ต่ออายุ'};render();return;}
+  if(!confirm(aiCfm('ทำนายไพ่ชุดนี้แบบละเอียด')))return;
+  rAI();
+}
+
+/* 5) ปุ่ม MBTI + Birth Chart: คำอธิบาย + ยืนยัน + ล็อกหน้าจอ */
+function bcAiBox(){
+  return `<div class="sec-title">🤖 วิเคราะห์ด้วย AI</div>
+  <div class="sm" style="line-height:1.7">ตำแหน่งดาวคำนวณด้วยสูตรในเว็บ AI ใช้เรียบเรียงคำทำนายเท่านั้น<br>🧠🌌 <b>บุคลิกภาพ MBTI + Birth Chart</b> วิเคราะห์นิสัย อารมณ์ การสื่อสาร ความรัก และการงาน โดยผสานผล MBTI ของคุณกับตำแหน่งดาว (ต้องทำ MBTI ก่อน)</div>
+  <div class="row" style="margin-top:.4rem"><button class="btn" onclick="bcAI()">🧠🌌 บุคลิกภาพ MBTI + Birth Chart (ใช้ 1 Token)</button></div>
+  <div class="err" id="baimsg"></div><div id="bai"></div>`;
+}
+async function bcAI(){
+  const m=$('baimsg');m.textContent='';
+  if(!B.res){m.textContent='กรุณาสร้างดวงกำเนิดก่อน';return;}
+  if(!(S.pw||(S.acct&&S.acct.role==='user'))){m.textContent='🔒 ต้องเข้าสู่ระบบด้วยบัญชี User ก่อน';return;}
+  if(!S.pw&&S.acct.tokens<1){m.textContent='🪙 Token ไม่พอ ซื้อได้ที่แท็บ 💳 ซื้อ/ต่ออายุ';return;}
+  if(!S.mbti){m.textContent='🧠 โปรดทำแบบทดสอบ MBTI ก่อน (ยังไม่ได้หัก Token)';return;}
+  if(!confirm(aiCfm('วิเคราะห์บุคลิกภาพ MBTI + Birth Chart')))return;
+  $('bai').innerHTML='';aiLock(true);
+  try{
+    const d=await api('apiPersonalityReading',cred(),{mbti:S.mbti.type,born:B.d+' '+MONTHS[B.m]+' '+B.y,chart:bcSummary()});
+    if(d.tokens!=null&&S.acct)S.acct.tokens=d.tokens;
+    const pre='style="white-space:pre-line"';
+    $('bai').innerHTML=`<div class="sumbox" ${pre}>${esc(d.intro)}</div>`
+      +(d.sections||[]).map(s=>`<div class="sumbox"><b>▸ ${esc(s.title)}</b><br><span ${pre}>${esc(s.reading)}</span></div>`).join('')
+      +`<div class="sumbox"><b>💪 จุดแข็ง</b><br><span ${pre}>${esc(d.strengths)}</span></div>`
+      +`<div class="sumbox"><b>⚠️ จุดที่ควรระวัง</b><br><span ${pre}>${esc(d.cautions)}</span></div>`
+      +`<div class="sumbox"><b>💡 คำแนะนำ</b><br><span ${pre}>${esc(d.advice)}</span></div>`
+      +(d.tokens!=null?`<div class="sm">🪙 Token คงเหลือ ${d.tokens}</div>`:'');
+  }catch(e){
+    m.textContent=e.message==='MBTI_REQUIRED'?'🧠 ยังไม่มีผล MBTI ที่บันทึกไว้ กรุณาทำแบบทดสอบก่อน':'⚠ '+e.message;
+  }finally{aiLock(false);}
+}
+</script>
+<script>
+/* ขอเลข 2 ตัวท้าย: ขูดเปลือกไม้ หรือ จุดธูป (สุ่มในเบราว์เซอร์ ฟรี) */
+(function(){const s=document.createElement('style');s.textContent=`
+.t2stage{position:relative;width:320px;max-width:100%;height:430px;margin:.6rem auto 0;border-radius:18px;overflow:hidden;background:#07101c;box-shadow:inset 0 0 0 1px rgba(224,196,138,.18)}
+.t2cv,.t2scene{position:absolute;left:0;top:0;width:320px;height:430px;display:block}
+.t2cv{touch-action:none;cursor:crosshair}
+.t2cv.off{display:none}
+.t2num{position:absolute;left:0;right:0;top:168px;text-align:center;font:800 46px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;color:#f6e7c3;opacity:0;filter:blur(8px);transform:scale(.84);text-shadow:0 2px 0 #3a2412,0 0 18px rgba(255,214,120,.35);pointer-events:none}
+.t2stage.incense .t2num{top:108px;color:#fff6dd}
+.t2hint{position:absolute;left:0;right:0;bottom:18px;text-align:center;pointer-events:none;color:#f3e6c8;font-size:12.5px;line-height:1.45;text-shadow:0 1px 4px #000}
+.t2modes{display:flex;gap:6px;margin:.55rem 0 .15rem}
+.t2modes button{flex:1;border:1px solid rgba(244,236,220,.16);background:transparent;color:#d5ccbf;border-radius:11px;min-height:40px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.t2modes button.on{background:#f6f1e8;color:#17140f;border-color:transparent}
+.t2bar{height:6px;background:#252a38;border-radius:99px;overflow:hidden;margin:.55rem auto 0;max-width:320px}
+.t2bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#e0c48a,#f6f1e8);transition:width .15s}
+.t2big{font:800 26px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:var(--a)}
+.t2chip{position:absolute;width:7px;height:4px;background:linear-gradient(#a56d4c,#4a2c1a);border-radius:1px;pointer-events:none;animation:t2chip .85s ease-in forwards}
+@keyframes t2chip{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+.t2tool{position:absolute;width:16px;height:16px;margin:-14px 0 0 -8px;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 35% 30%,#f7efe2,#c4a27a 46%,#6d4c34);box-shadow:0 2px 5px rgba(0,0,0,.45);pointer-events:none;display:none;z-index:4}
+.t2dust{position:absolute;width:3px;height:3px;border-radius:50%;background:#d7c4a4;pointer-events:none;animation:t2chip .6s linear forwards}`;document.head.appendChild(s);})();
+
+const T2={mode:'bark',num:'',done:false,auto:false,hist:[],node:null,dpr:Math.min(2,window.devicePixelRatio||1),last:null,ct:0,ck:0,lit:[0,0,0],raf:0,smoke:[]};
+const TW=320,TH=430;
+
+function t2Rand(){const a=new Uint32Array(1);let x;do{crypto.getRandomValues(a);x=a[0];}while(x>=4294967200);return String(x%100).padStart(2,'0');}
+
+function t2Scene(){
+  const g=T2.sg,w=T2.scene.width,h=T2.scene.height,d=T2.dpr;
+  g.setTransform(d,0,0,d,0,0);
+  const sky=g.createLinearGradient(0,0,0,TH);
+  sky.addColorStop(0,'#07101f');sky.addColorStop(.45,'#14243d');sky.addColorStop(1,'#1c3148');
+  g.fillStyle=sky;g.fillRect(0,0,TW,TH);
+  g.fillStyle='rgba(255,244,194,.16)';g.beginPath();g.arc(248,54,46,0,7);g.fill();
+  g.fillStyle='#fff6d8';g.beginPath();g.arc(248,54,16,0,7);g.fill();
+  g.fillStyle='rgba(255,255,255,.8)';
+  [[28,30,1.1],[70,18,.8],[118,42,1],[168,24,.7],[40,78,.8],[286,96,.9],[210,88,.6]].forEach(function(p){g.beginPath();g.arc(p[0],p[1],p[2],0,7);g.fill();});
+  g.fillStyle='#0c2418';g.beginPath();g.ellipse(160,404,190,28,0,0,7);g.fill();
+  g.fillStyle='#143222';g.beginPath();g.ellipse(160,392,150,16,0,0,7);g.fill();
+  function blob(x,y,rx,ry,c){g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill();}
+  blob(78,168,46,34,'#163628');blob(242,164,50,36,'#143024');blob(160,126,78,52,'#1c4632');
+  blob(112,118,42,30,'#24543c');blob(198,112,46,32,'#214e38');blob(154,86,36,26,'#2c6246');
+  blob(96,146,22,16,'#3d7a52');blob(214,138,20,14,'#3a7450');blob(150,104,16,11,'#4d8a5e');
+  g.fillStyle='rgba(0,0,0,.18)';blob(160,188,70,18,'rgba(0,0,0,.22)');
+  const trunk=g.createLinearGradient(118,0,206,0);
+  trunk.addColorStop(0,'#2a180f');trunk.addColorStop(.35,'#6a4630');trunk.addColorStop(.7,'#4a2e1d');trunk.addColorStop(1,'#24150e');
+  g.fillStyle=trunk;
+  g.beginPath();g.moveTo(126,176);g.bezierCurveTo(122,230,116,300,108,378);g.lineTo(214,378);g.bezierCurveTo(206,300,198,230,194,176);g.closePath();g.fill();
+  g.strokeStyle='rgba(20,10,6,.45)';g.lineWidth=1.4;
+  for(let i=0;i<9;i++){
+    const x=124+i*9;
+    g.beginPath();g.moveTo(x,190);g.bezierCurveTo(x-4,240,x+5,300,x-2,368);g.stroke();
+  }
+  g.fillStyle='rgba(86,64,40,.35)';
+  [[146,250,7,11],[178,300,6,9],[132,330,5,8]].forEach(function(k){g.beginPath();g.ellipse(k[0],k[1],k[2],k[3],.2,0,7);g.fill();});
+  [['#c23b45',214],['#e7a0b8',258],['#e2c15a',304]].forEach(function(b){
+    g.fillStyle=b[0];
+    g.beginPath();g.moveTo(118,b[1]);g.quadraticCurveTo(160,b[1]+8,202,b[1]);g.lineTo(202,b[1]+9);g.quadraticCurveTo(160,b[1]+16,118,b[1]+9);g.fill();
+    g.beginPath();g.moveTo(196,b[1]+4);g.lineTo(206,b[1]+18);g.lineTo(190,b[1]+12);g.fill();
+  });
+  if(T2.mode==='incense'){
+    g.fillStyle='#5c4034';g.beginPath();g.ellipse(160,352,34,10,0,0,7);g.fill();
+    g.fillStyle='#7a5644';g.beginPath();g.ellipse(160,346,28,12,0,0,7);g.fill();
+    g.fillStyle='#3e2a22';g.beginPath();g.ellipse(160,344,16,6,0,0,7);g.fill();
+    [138,160,182].forEach(function(x,i){
+      g.strokeStyle='#d8c4a4';g.lineWidth=2.2;g.beginPath();g.moveTo(x,344);g.lineTo(x-6,292);g.stroke();
+      const s=T2.lit[i]||0;
+      if(s){
+        const fh=3+s*10+Math.sin(Date.now()/90+i)*1.4*s;
+        g.fillStyle='rgba(255,120,40,'+(0.35+s*0.6)+')';g.beginPath();g.ellipse(x-6,292-fh*0.45,2.4+s*2,fh,0,0,7);g.fill();
+        g.fillStyle='rgba(255,236,190,'+s+')';g.beginPath();g.arc(x-6,292-fh*0.2,1.4+s,0,7);g.fill();
+      }else{g.fillStyle='#b4232a';g.fillRect(x-8,288,4,7);}
+    });
+    T2.smoke.forEach(function(p){
+      g.fillStyle='rgba(230,230,230,'+(p.a)+')';
+      g.beginPath();g.ellipse(p.x,p.y,p.r,p.r*1.5,0,0,7);g.fill();
+    });
+  }
+}
+function t2Fit(c){c.width=TW*T2.dpr;c.height=TH*T2.dpr;c.style.width=TW+'px';c.style.height=TH+'px';}
+
+function t2Build(){
+  const n=document.createElement('div');n.className='card';
+  n.innerHTML='<b>ขอเลข 2 ตัวท้าย</b><div class="sm" style="margin:.3rem 0 .2rem">เลือกวิธี แล้วตั้งจิต · สุ่ม 00-99 ในเครื่องนี้ ไม่ใช้ Token</div>'
+    +'<div class="t2modes"><button type="button" id="t2mb" class="on">ขูดเปลือกไม้</button><button type="button" id="t2mi">จุดธูป</button></div>'
+    +'<div class="t2stage" id="t2stage"><canvas class="t2scene" id="t2scene"></canvas><div class="t2num" id="t2num">--</div><canvas class="t2cv" id="t2cv"></canvas><div class="t2tool" id="t2tool"></div><div class="t2hint" id="t2hint">ขูดที่ลำต้น</div></div>'
+    +'<div class="t2bar"><i id="t2bar"></i></div><div style="text-align:center;margin:.4rem 0;min-height:36px" id="t2res"></div>'
+    +'<div class="row" style="justify-content:center"><button class="btn g" id="t2auto" type="button">ทำอัตโนมัติ</button><button class="btn" id="t2new" type="button">ขอเลขใหม่</button></div>'
+    +'<div class="sm" id="t2hist" style="margin-top:.5rem;text-align:center"></div><div class="sm" style="margin-top:.35rem">เป็นการสุ่มเพื่อความบันเทิง ไม่การันตีผล</div>';
+  T2.node=n;
+  T2.stage=n.querySelector('#t2stage');T2.scene=n.querySelector('#t2scene');T2.cv=n.querySelector('#t2cv');
+  t2Fit(T2.scene);t2Fit(T2.cv);
+  T2.sg=T2.scene.getContext('2d');T2.g=T2.cv.getContext('2d',{willReadFrequently:true});
+  T2.numEl=n.querySelector('#t2num');T2.hint=n.querySelector('#t2hint');T2.tool=n.querySelector('#t2tool');
+  T2.bar=n.querySelector('#t2bar');T2.res=n.querySelector('#t2res');T2.hl=n.querySelector('#t2hist');T2.autoBtn=n.querySelector('#t2auto');
+  n.querySelector('#t2mb').onclick=function(){t2Mode('bark');};
+  n.querySelector('#t2mi').onclick=function(){t2Mode('incense');};
+  n.querySelector('#t2auto').onclick=t2Auto;
+  n.querySelector('#t2new').onclick=t2New;
+  const pos=function(e){const r=T2.cv.getBoundingClientRect();return[(e.clientX-r.left)*T2.dpr,(e.clientY-r.top)*T2.dpr];};
+  const onTrunk=function(e){const r=T2.cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;return x>108&&x<214&&y>176&&y<372;};
+  const toolAt=function(e){const r=T2.stage.getBoundingClientRect();T2.tool.style.display='block';T2.tool.style.left=(e.clientX-r.left)+'px';T2.tool.style.top=(e.clientY-r.top)+'px';};
+  T2.cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+  T2.cv.addEventListener('pointerdown',function(e){
+    if(e.button!==0||T2.mode!=='bark'||T2.done||T2.auto||T2.forming)return;
+    if(!onTrunk(e)){T2.hint.textContent='กดค้างบนลำต้น แล้วลากไปมา';return;}
+    T2.cv.setPointerCapture(e.pointerId);T2.cv.style.cursor='grabbing';T2.hint.style.display='none';T2.last=pos(e);toolAt(e);t2Line(T2.last[0],T2.last[1],T2.last[0],T2.last[1]);t2Chip(e);
+  });
+  T2.cv.addEventListener('pointermove',function(e){
+    if(T2.mode!=='bark'||T2.done)return;
+    if(!(e.buttons&1)){T2.last=null;T2.cv.style.cursor='crosshair';return;}
+    toolAt(e);
+    if(!T2.last||T2.auto||T2.forming)return;
+    const p=pos(e);t2Line(T2.last[0],T2.last[1],p[0],p[1]);T2.last=p;t2Chip(e);
+    if(performance.now()-T2.ck>90){T2.ck=performance.now();t2Check();}
+  });
+  ['pointerup','pointercancel'].forEach(function(ev){T2.cv.addEventListener(ev,function(){T2.tool.style.display='none';T2.cv.style.cursor='crosshair';if(T2.last){T2.last=null;t2Check();}});});
+  T2.stage.addEventListener('pointerdown',function(e){
+    if(T2.mode!=='incense'||T2.done||T2.auto)return;
+    const r=T2.stage.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    [132,154,176].forEach(function(sx,i){if(Math.abs(x-sx)<16&&y>270&&y<350)t2Light(i);});
+  });
+  t2New();
+}
+function t2Mode(m){
+  if(T2.mode===m&&!T2.done)return;
+  T2.mode=m;T2.auto=false;
+  T2.node.querySelector('#t2mb').classList.toggle('on',m==='bark');
+  T2.node.querySelector('#t2mi').classList.toggle('on',m==='incense');
+  T2.stage.classList.toggle('incense',m==='incense');
+  t2New();
+}
+function t2Trunk(){
+  const g=T2.g,d=T2.dpr;
+  g.beginPath();g.moveTo(126*d,176*d);g.bezierCurveTo(122*d,230*d,116*d,300*d,108*d,378*d);g.lineTo(214*d,378*d);g.bezierCurveTo(206*d,300*d,198*d,230*d,194*d,176*d);g.closePath();
+}
+function t2Bark(){
+  const g=T2.g,w=T2.cv.width,h=T2.cv.height,d=T2.dpr;
+  g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='source-over';g.clearRect(0,0,w,h);
+  g.save();t2Trunk();g.clip();
+  const gr=g.createLinearGradient(110*d,0,210*d,0);
+  gr.addColorStop(0,'#2c1a10');gr.addColorStop(.42,'#7b5340');gr.addColorStop(.7,'#4e3120');gr.addColorStop(1,'#24150e');
+  g.fillStyle=gr;g.fillRect(0,0,w,h);
+  for(let i=0;i<18;i++){
+    const x=(118+i*5)*d;
+    g.strokeStyle=i%2?'rgba(18,8,4,.4)':'rgba(186,132,90,.18)';g.lineWidth=(1.1+ (i%3))*d;
+    g.beginPath();g.moveTo(x,180*d);g.bezierCurveTo(x-4*d,240*d,x+6*d,300*d,x-2*d,370*d);g.stroke();
+  }
+  for(let i=0;i<26;i++){
+    g.fillStyle='rgba(20,10,6,.28)';
+    g.beginPath();g.ellipse((128+Math.random()*70)*d,(200+Math.random()*150)*d,2*d,7*d,.2,0,7);g.fill();
+  }
+  g.restore();
+}
+function t2Scar(x,y){
+  const g=T2.sg,d=T2.dpr;g.save();g.setTransform(d,0,0,d,0,0);
+  g.strokeStyle='rgba(232,196,150,.55)';g.lineWidth=2.2;g.lineCap='round';
+  g.beginPath();g.moveTo(x/d-4,y/d);g.lineTo(x/d+5,y/d+1);g.stroke();
+  g.restore();
+}
+function t2Clear(){cancelAnimationFrame(T2.raf);T2.raf=0;(T2.timers||[]).forEach(clearTimeout);T2.timers=[];}
+function t2Num(v,blur){T2.numEl.style.opacity=String(v);T2.numEl.style.filter='blur('+blur+'px)';T2.numEl.style.transform='scale('+(0.84+0.16*v)+')';}
+function t2New(){
+  t2Clear();T2.smoke=[];T2.lit=[0,0,0];T2.num=t2Rand();T2.done=false;T2.forming=false;T2.auto=false;T2.last=null;
+  T2.numEl.textContent=T2.num;t2Num(T2.mode==='bark'?1:0,T2.mode==='bark'?0:10);
+  T2.cv.classList.toggle('off',T2.mode!=='bark');
+  T2.hint.style.display='block';
+  T2.hint.textContent=T2.mode==='bark'?'กดเมาส์ซ้ายค้าง แล้วขูดไปมาบนลำต้น':'แตะปลายธูปทีละดอก ไฟจะติดเอง';
+  T2.bar.style.width='0';T2.res.innerHTML='<span class="sm">ตั้งจิตแล้วเริ่มได้เลย</span>';T2.autoBtn.disabled=false;T2.autoBtn.textContent='ทำอัตโนมัติ';
+  t2Scene();if(T2.mode==='bark')t2Bark();else t2Loop();
+}
+function t2Line(x0,y0,x1,y1){
+  const g=T2.g,d=T2.dpr,dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy)||1,n=Math.max(1,Math.floor(len/(3*d)));
+  g.globalCompositeOperation='destination-out';g.fillStyle='#000';
+  for(let i=0;i<=n;i++){
+    const t=i/n,x=x0+dx*t,y=y0+dy*t,w=16*d;
+    g.beginPath();g.arc(x,y,w,0,7);g.fill();
+  }
+  t2Scar((x0+x1)/2,(y0+y1)/2);
+}
+function t2Flake(px,py){
+  const c=document.createElement('span');c.className=Math.random()<.3?'t2dust':'t2chip';
+  c.style.left=px+'px';c.style.top=py+'px';
+  c.style.setProperty('--dx',((Math.random()-.35)*54)+'px');
+  c.style.setProperty('--dy',(18+Math.random()*48)+'px');
+  c.style.setProperty('--rot',((Math.random()-.5)*220)+'deg');
+  c.addEventListener('animationend',function(){c.remove();});T2.stage.appendChild(c);
+}
+function t2Chip(e){
+  const now=performance.now();if(now-T2.ct<48)return;T2.ct=now;
+  const r=T2.stage.getBoundingClientRect();t2Flake(e.clientX-r.left,e.clientY-r.top);
+}
+function t2Check(){
+  if(T2.done||T2.forming||T2.mode!=='bark')return;
+  const dpr=T2.dpr,x0=Math.floor(124*dpr),y0=Math.floor(168*dpr),w=Math.floor(72*dpr),h=Math.floor(70*dpr);
+  const d=T2.g.getImageData(x0,y0,w,h).data;let c=0,n=0;
+  for(let i=3;i<d.length;i+=16){n++;if(d[i]<40)c++;}
+  const r=c/Math.max(1,n);T2.bar.style.width=Math.round(Math.min(1,r)*100)+'%';
+  if(r>=0.58)t2Form();
+}
+function t2Light(i){
+  if(T2.lit[i])return;
+  T2.lit[i]=0.08;T2.hint.textContent='ไฟกำลังติด...';T2.res.innerHTML='<span class="sm">รอให้เปลวติดก่อน</span>';
+  const t0=performance.now();
+  (function grow(now){
+    if(T2.done)return;
+    const p=Math.min(1,(now-t0)/1400);
+    T2.lit[i]=0.08+0.92*p;
+    const k=T2.lit.filter(function(x){return x>=1;}).length;
+    T2.bar.style.width=Math.round((k+p)/3*68)+'%';
+    if(p<1)requestAnimationFrame(grow);
+    else{T2.lit[i]=1;if(T2.lit.filter(function(x){return x>=1;}).length===3)t2Form();}
+  })(t0);
+}
+function t2Loop(){
+  if(T2.mode!=='incense')return;
+  const thick=T2.forming?0.7:0.28;
+  if(T2.lit.some(function(x){return x;})){
+    [132,154,176].forEach(function(x,i){
+      if(T2.lit[i]&&Math.random()<thick)T2.smoke.push({x:x-6+(Math.random()*8-4),y:286,r:2+Math.random()*3,a:T2.forming?0.22:0.16,vx:(Math.random()-.5)*.35});
+    });
+    T2.smoke.forEach(function(p){p.y-=T2.forming?0.55:0.85;p.x+=p.vx+Math.sin(p.y/18)*.15;p.r+=.035;p.a*=.992;});
+    T2.smoke=T2.smoke.filter(function(p){return p.a>.025&&p.y>30;}).slice(-90);
+    t2Scene();
+  }
+  T2.raf=requestAnimationFrame(t2Loop);
+}
+function t2Form(){
+  if(T2.forming||T2.done)return;
+  T2.forming=true;T2.last=null;T2.autoBtn.disabled=true;
+  T2.hint.textContent=T2.mode==='bark'?'รอยขูดกำลังรวมเป็นเลข...':'ควันกำลังรวมตัว อย่าเพิ่งปิดหน้า';
+  T2.res.innerHTML='<span class="sm">กำลังก่อตัว</span>';
+  const wait=T2.mode==='incense'?3800:1700,t0=performance.now();
+  (function tick(now){
+    if(T2.done)return;
+    const p=Math.min(1,(now-t0)/wait),e=1-Math.pow(1-p,2);
+    T2.bar.style.width=Math.round(68+e*32)+'%';
+    if(T2.mode!=='bark')t2Num(0.2+0.8*e,(1-e)*9);else t2Num(1,0);
+    if(p<1)requestAnimationFrame(tick);else t2Reveal();
+  })(t0);
+}
+function t2Auto(){
+  if(T2.done||T2.auto||T2.forming)return;
+  T2.auto=true;T2.autoBtn.disabled=true;T2.autoBtn.textContent='กำลังทำพิธี...';T2.hint.style.display='none';
+  if(T2.mode==='incense'){
+    let i=0;(function step(){if(T2.done)return;t2Light(i);i++;if(i<3)T2.timers.push(setTimeout(step,1700));})();
+    return;
+  }
+  const d=T2.dpr,strokes=[[134,208,186,214],[142,230,198,224],[128,250,184,258],[138,272,202,266],[130,294,192,300],[144,316,196,310],[132,336,184,342]];
+  let si=0;
+  function stroke(){
+    if(T2.done||T2.forming)return;
+    if(si>=strokes.length){t2Check();t2Form();return;}
+    const s=strokes[si],t0=performance.now(),dur=680;
+    (function f(now){
+      if(T2.done||T2.forming)return;
+      const p=Math.min(1,(now-t0)/dur),e=p*p*(3-2*p);
+      const x=(s[0]+(s[2]-s[0])*e)*d,y=(s[1]+(s[3]-s[1])*e+Math.sin(p*8)*1.4)*d;
+      if(!T2.last)T2.last=[x,y];
+      t2Line(T2.last[0],T2.last[1],x,y);T2.last=[x,y];
+      T2.tool.style.display='block';T2.tool.style.left=(x/d)+'px';T2.tool.style.top=(y/d)+'px';
+      if(Math.random()<.55)t2Flake(x/d,y/d);
+      T2.bar.style.width=Math.round(((si+p)/strokes.length)*78)+'%';
+      t2Num(Math.min(.55,(si+p)/strokes.length*.7),8-(si/strokes.length)*4);
+      if(p<1)requestAnimationFrame(f);
+      else{T2.last=null;si++;T2.timers.push(setTimeout(stroke,160));}
+    })(t0);
+  }
+  stroke();
+}
+function t2Reveal(){
+  if(T2.done)return;T2.done=true;T2.auto=false;T2.forming=false;T2.last=null;
+  if(T2.mode==='bark')T2.cv.classList.add('off');
+  t2Num(1,0);T2.bar.style.width='100%';T2.autoBtn.disabled=true;T2.autoBtn.textContent='ทำอัตโนมัติ';
+  T2.hint.textContent='';
+  try{if(navigator.vibrate)navigator.vibrate([18,40,18]);}catch(e){}
+  T2.hist.unshift(T2.num);T2.hist=T2.hist.slice(0,10);
+  T2.res.innerHTML='<div class="sm">'+(T2.mode==='bark'?'เลขจากเปลือกไม้':'เลขจากควันธูป')+'</div><div class="t2big">'+T2.num+'</div>';
+  T2.hl.innerHTML='เลขที่ขอไว้ล่าสุด: '+T2.hist.map(function(x){return '<b style="color:var(--a2)">'+x+'</b>';}).join(' · ');
+  t2Scene();
+}
+const _render2=render;
+render=function(){
+  _render2();
+  const show=(S.mode==='user'&&S.app==='lottery')||(S.mode==='admin'&&S.app==='lottery'&&S.atab==='spin');
+  if(!show)return;
+  const a=$('app');if(!a)return;
+  if(!T2.node)t2Build();
+  const top=a.querySelector('.top');
+  if(S.mode==='user'&&top)top.insertAdjacentElement('afterend',T2.node);else a.appendChild(T2.node);
+};
+render();
+</script>
+<script>
+/* a11y: ทำให้แท็บกดด้วยคีย์บอร์ดได้ (Enter / Space) */
+(function(){var a=document.getElementById('app');if(!a)return;
+function fix(){a.querySelectorAll('.tab:not([tabindex])').forEach(function(e){e.setAttribute('tabindex','0');e.setAttribute('role','button')})}
+new MutationObserver(fix).observe(a,{childList:true,subtree:true});fix();
+a.addEventListener('keydown',function(ev){var t=ev.target;if((ev.key==='Enter'||ev.key===' ')&&t&&t.classList&&t.classList.contains('tab')){ev.preventDefault();t.click()}});})();
+</script>
+<script>
+/* ===== รูปจาก Drive (โหลดผ่านเซิร์ฟเวอร์ ไม่ต้องแชร์สาธารณะ) ===== */
+let M_IMGS={},IMG_ERR='',IMG_BUSY=false,IMG_DONE=false,IMG_TRY=0;
+const IMGC={},IMGP={};
+const imgKey=c=>c.t==='major'?'m'+String(c.no).padStart(2,'0'):c.t+String(c.no).padStart(2,'0');
+function dimg(key,cls,alt,style){
+  const s=IMGC[key]||'';
+  return `<img class="${cls}" data-k="${key}" alt="${esc(alt)}" style="${style||''}"${s?` src="${s}"`:''}>`;
+}
+/* เติมรูปให้ <img data-k> ที่มองเห็นอยู่ (กล่องที่ยังไม่กางจะรอจนกางก่อน) */
+function hydrate(){
+  document.querySelectorAll('img[data-k]:not([data-l])').forEach(im=>{
+    if(!im.getClientRects().length)return;
+    const k=im.dataset.k;im.dataset.l='1';
+    if(IMGC[k]){im.src=IMGC[k];return;}
+    (IMGP[k]=IMGP[k]||api('apiDriveImg',k).then(u=>{IMGC[k]=u;return u;}).catch(e=>{IMG_ERR=e.message;delete IMGP[k];return '';}))
+      .then(u=>{if(u)im.src=u;else im.style.display='none';});
+  });
+}
+tImg=function(c,rev){const k=imgKey(c);return T_IMGS[k]?dimg(k,'timg'+(rev?' rev':''),c.en):'';};
+function mImg(code){return M_IMGS[code]?dimg('mbti:'+code,'timg',code,'max-width:260px'):'';}
+const _mTypeHtml=mTypeHtml;
+mTypeHtml=function(t){return mImg(t.c)+_mTypeHtml(t);};
+
+/* หลังไพ่ตอนสุ่มเลือก */
+(function(){const s=document.createElement('style');s.textContent='.tb{text-shadow:0 0 4px #000,0 0 4px #000}';document.head.appendChild(s);
+  const b=document.createElement('style');b.id='bkst';document.head.appendChild(b);})();
+rGrid=function(){
+  if(T_IMGS.back&&!IMGP.back){IMGP.back=api('apiDriveImg','back').then(u=>{
+    IMGC.back=u;if(u)$('bkst').textContent='.tb.bk{background:#1c2030 url('+u+') center/cover no-repeat!important;color:#fff}';
+    const g=$('tgrid');if(g)g.innerHTML=rGrid();}).catch(e=>{IMG_ERR=e.message;});}
+  const bk=IMGC.back?' bk':'';
+  return R.deck.map((c,i)=>{const k=R.pick.indexOf(i);
+    return `<button class="tb${bk} ${k>=0?'on':''}" onclick="rPick(${i})">${k>=0?k+1:(bk?'':'✦')}</button>`;}).join('');
+};
+
+/* ข้อความแจ้งปัญหา */
+function imgNote(){
+  if(IMG_ERR)return `<div class="err">⚠ โหลดรูปจาก Drive ไม่สำเร็จ: ${esc(IMG_ERR)}</div>`;
+  return '';
+}
+function missNote(list,label){
+  return (IMG_DONE&&list.length)?`<div class="sm" style="margin:.4rem 0">⚠ ยังไม่พบรูป${label} ${list.length} รายการ (ชื่อไฟล์ใน Drive ไม่ตรงกฎ): ${esc(list.join(', '))}</div>`:'';
+}
+
+/* ภาพรวมไพ่ 78 ใบ → อยู่ในกล่อง "ประวัติศาสตร์ของไพ่ทาโรต์" */
+const _tList=tList;
+tList=function(){
+  const img=T_IMGS.all?dimg('all','','ภาพรวมไพ่ทั้งสำรับ 78 ใบ','width:100%;border-radius:10px;display:block;margin:8px 0'):'';
+  const key='ประวัติศาสตร์ของไพ่ทาโรต์</b></summary>';
+  return _tList().replace(key,()=>key+img);
+};
+const _tarotLib=tarotLib;
+tarotLib=function(){
+  const miss=TAROT.filter(c=>!T_IMGS[imgKey(c)]).map(c=>c.en);
+  return imgNote()+missNote(miss,'ไพ่')+_tarotLib();
+};
+
+/* ภาพรวม MBTI → อยู่ในกล่อง "MBTI คืออะไร" */
+const _mInfo=mInfo,_mTypes=mTypes;
+mInfo=function(){
+  const img=M_IMGS.ALL?dimg('mbti:ALL','','ภาพรวม MBTI 16 ไทป์','width:100%;border-radius:10px;display:block;margin:8px 0'):'';
+  const key='<b>📖 MBTI คืออะไร</b>';
+  return imgNote()+_mInfo().replace(key,()=>key+img);
+};
+mTypes=function(){
+  const miss=Object.keys(M_T).filter(c=>!M_IMGS[c]);
+  return imgNote()+missNote(miss,'ไทป์')+_mTypes();
+};
+
+/* โหลดตารางชื่อไฟล์ → ไอดี */
+async function loadImgs(){
+  if(IMG_BUSY||IMG_DONE||IMG_TRY>=3)return;IMG_BUSY=true;IMG_TRY++;
+  const r=await Promise.allSettled([api('apiTarotImages'),api('apiMbtiImages')]);
+  if(r[0].status==='fulfilled')T_IMGS=r[0].value||{};else IMG_ERR=r[0].reason.message;
+  if(r[1].status==='fulfilled')M_IMGS=r[1].value||{};else IMG_ERR=r[1].reason.message;
+  IMG_DONE=r.every(x=>x.status==='fulfilled');
+  IMG_BUSY=false;
+  if(S.mode!=='login'&&(S.app==='tarot'||S.app==='mbti'))render();
+}
+const _renderImg=render;
+render=function(){_renderImg();if(!IMG_DONE)loadImgs();hydrate();};
+document.addEventListener('toggle',hydrate,true);   /* กางกล่อง → โหลดรูปในกล่องนั้น */
+loadImgs();
+</script>
+<script>
+/* ===== Disclaimer + Privacy Policy แสดงตอนเข้าเว็บ ===== */
+const DISCLAIMER = `⚠️ <b>เพื่อความบันเทิงเท่านั้น</b><br>
+ไม่การันตีผล ไม่ใช่บริการพนันออนไลน์ และไม่รับผิดชอบต่อความเสียหายใดๆ ที่เกิดจากการใช้งาน<br>
+เลขที่แสดงเป็นเพียงการรวบรวมและวิเคราะห์ข้อมูลจากแหล่งสาธารณะเท่านั้น`;
+
+const PRIVACY = `📋 <b>นโยบายความเป็นส่วนตัว</b><br>
+เราเก็บข้อมูลชื่อ ติดต่อ สลิปโอนเงิน และประวัติการใช้งานเพื่อให้บริการและตรวจสอบเท่านั้น<br>
+ไม่แชร์ให้บุคคลที่สาม ข้อมูลจะถูกลบเมื่อบัญชีถูกลบหรือตามคำขอ`;
+
+function showLegalBanner() {
+  if (document.getElementById('legal-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'legal-banner';
+  banner.style.cssText = `
+    background: #1a1f33;
+    border: 1px solid #394061;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 0 0 1rem;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #d5ccbf;
+  `;
+  banner.innerHTML = DISCLAIMER + '<hr style="border:none;border-top:1px solid #272d46;margin:10px 0">' + PRIVACY +
+    '<div style="margin-top:10px;text-align:right"><button class="btn o" style="font-size:12.5px;padding:6px 12px" onclick="this.parentElement.parentElement.remove()">ปิด</button></div>';
+  const app = document.getElementById('app');
+  if (app) app.insertBefore(banner, app.firstChild);
+}
+
+// แสดงทุกครั้งที่ render หน้า (โดยเฉพาะหน้า Login)
+const _origRenderLegal = (typeof render === 'function') ? render : function(){};
+render = function() {
+  _origRenderLegal.apply(this, arguments);
+  if (typeof S !== 'undefined' && (S.mode === 'login' || !S.mode)) {
+    setTimeout(showLegalBanner, 100);
+  }
+};
+
+// แสดงทันทีตอนโหลดครั้งแรก
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(showLegalBanner, 300);
+});
+setTimeout(showLegalBanner, 500);
+</script>
+<script>
+/* ===== Patch เพิ่มเติม: Token/Expiry + ลืมรหัสผ่าน + ดูตัวอย่าง Manual + ยืนยันก่อนสุ่ม ===== */
+
+/* แสดงสถานะ Token + วันหมดอายุ ตลอดเวลาในหน้า User */
+const _renderToken = render;
+render = function() {
+  _renderToken.apply(this, arguments);
+  const top = document.querySelector('.top');
+  if (top && typeof S !== 'undefined' && S.mode === 'user' && S.acct) {
+    const exp = S.acct.expiredAt ? new Date(S.acct.expiredAt) : null;
+    const expStr = exp ? (exp > Date.now() ? 'หมดอายุ ' + exp.toLocaleDateString('th-TH') : 'หมดอายุแล้ว') : 'ไม่จำกัด';
+    let status = top.querySelector('.token-status');
+    if (!status) {
+      status = document.createElement('div');
+      status.className = 'sm token-status';
+      status.style.cssText = 'width:100%;text-align:right;margin-top:4px;color:var(--t2)';
+      top.appendChild(status);
+    }
+    status.innerHTML = `🪙 Token: <b>${S.acct.tokens}</b> · ${expStr}`;
+  }
+};
+
+/* ยืนยัน disclaimer ก่อนสุ่มทุกครั้ง */
+const _userSpin = typeof userSpin === 'function' ? userSpin : null;
+if (_userSpin) {
+  window.userSpin = async function() {
+    if (!confirm('⚠️ เพื่อความบันเทิงเท่านั้น ไม่การันตีผล\n\nต้องการสุ่มเลขต่อหรือไม่? (ใช้ 1 Token)')) return;
+    return _userSpin.apply(this, arguments);
+  };
+}
+
+/* ดูตัวอย่างหลังบันทึก Manual */
+const _adminManual = typeof adminManual === 'function' ? adminManual : null;
+if (_adminManual) {
+  adminManual = async function() {
+    const res = await _adminManual.apply(this, arguments);
+    if (res && confirm('บันทึกสำเร็จ ต้องการดูตัวอย่างที่ User จะเห็นหรือไม่?')) {
+      alert('ตัวอย่างที่ User เห็น:\nชุด 1-4: ' + [1,2,3,4].map(i => (typeof MAN !== 'undefined' && MAN['s'+i+'n']) || '').join(' / ') + '\n6 หลัก: ' + ((typeof MAN !== 'undefined' && MAN.sixn) || ''));
+    }
+    return res;
+  };
+}
+
+/* ฟอร์มขอรีเซ็ตรหัสผ่าน */
+function showResetForm() {
+  const html = `<div class="card"><b>ลืมรหัสผ่าน</b>
+    <input class="inp" id="ru" placeholder="Username">
+    <input class="inp" id="rc" placeholder="เบอร์/อีเมลติดต่อ (เพื่อยืนยัน)">
+    <div class="err" id="rmsg"></div>
+    <button class="btn" onclick="doReset()">ส่งคำขอรีเซ็ต</button>
+    <button class="btn o" onclick="render()">กลับ</button></div>`;
+  document.getElementById('app').innerHTML = html;
+}
+async function doReset() {
+  const u = document.getElementById('ru').value, c = document.getElementById('rc').value, m = document.getElementById('rmsg');
+  m.textContent = '';
+  try {
+    await api('apiRequestPasswordReset', u, c);
+    m.className = 'err ok';
+    m.textContent = 'ส่งคำขอแล้ว Admin จะติดต่อกลับเพื่อตั้งรหัสใหม่';
+  } catch(e) { m.textContent = e.message; }
+}
+
+/* เพิ่มลิงก์ลืมรหัสในหน้า Login */
+const _loginView = typeof loginView === 'function' ? loginView : null;
+if (_loginView) {
+  loginView = function() {
+    const html = _loginView();
+    return html.replace(/<\/div>\s*$/, '<div style="margin-top:8px;text-align:center"><a href="#" onclick="showResetForm();return false;" style="color:var(--a);font-size:13px">ลืมรหัสผ่าน?</a></div></div>');
+  };
+}
+</script>
+</body></html>
+<script>
+/* ===== Admin: กรอกเลขเอง (manual) ===== */
+const MAN={};
+const mv=k=>esc(MAN[k]||'');
+function mset(k,el,digits){if(digits)el.value=el.value.replace(/\D/g,'');MAN[k]=el.value;}
+function mmsg(m,ok){const e=$('mmsg');if(e){e.textContent=m;e.className='err'+(ok?' ok':'');}}
+
+function manualForm(){
+  const blk=(i,title)=>`<div class="h" style="margin-bottom:.6rem"><b>${title}</b>
+    <input class="inp" inputmode="numeric" maxlength="3" placeholder="เลข 3 หลัก" value="${mv('s'+i+'n')}" oninput="mset('s${i}n',this,1)" style="margin-top:.4rem;font:600 20px var(--mono);letter-spacing:.14em">
+    <input class="inp" placeholder="ที่มา (ชื่อสำนัก/สูตร)" value="${mv('s'+i+'s')}" oninput="mset('s${i}s',this)">
+    <textarea class="inp" placeholder="รายละเอียด / เหตุผล" oninput="mset('s${i}r',this)">${mv('s'+i+'r')}</textarea></div>`;
+  return `<div class="card"><b>✍️ กรอกเลขเอง (Manual)</b>
+    <div class="sm" style="margin:.3rem 0 .5rem">พิมพ์เลขและรายละเอียดเองได้เลย ไม่ต้องใช้ AI · บันทึกแล้ว User จะเห็นเป็นงวดล่าสุดเหมือนเดิม</div>
+    ${dsel('mn',16)}
+    ${[1,2,3,4].map(i=>blk(i,'ชุดที่ '+i)).join('')}
+    <div class="h" style="margin-bottom:.6rem"><b>ชุด 6 หลัก</b>
+      <input class="inp" inputmode="numeric" maxlength="6" placeholder="เลข 6 หลัก" value="${mv('sixn')}" oninput="mset('sixn',this,1)" style="margin-top:.4rem;font:600 20px var(--mono);letter-spacing:.14em">
+      <textarea class="inp" placeholder="รายละเอียด / เหตุผล" oninput="mset('sixr',this)">${mv('sixr')}</textarea></div>
+    <textarea class="inp" placeholder="สรุปงวด" oninput="mset('sum',this)">${mv('sum')}</textarea>
+    <div class="err" id="mmsg"></div>
+    <div class="row"><button class="btn g" id="msave" onclick="adminManual()">💾 บันทึกเลขที่กรอก</button>
+    <button class="btn o" onclick="if(confirm('ล้างฟอร์มทั้งหมด?')){for(const k in MAN)delete MAN[k];render();}">ล้างฟอร์ม</button></div></div>`;
+}
+
+async function adminManual(){
+  const r={};
+  for(let i=1;i<=4;i++){
+    const n=MAN['s'+i+'n']||'';
+    if(n.length!==3)return mmsg('ชุดที่ '+i+' ต้องเป็นเลข 3 หลัก');
+    r['set'+i]={num:n,source:MAN['s'+i+'s']||'',reason:MAN['s'+i+'r']||''};
+  }
+  if((MAN.sixn||'').length!==6)return mmsg('ชุด 6 หลักต้องเป็นเลข 6 หลัก');
+  r.sixDigit={num:MAN.sixn,reason:MAN.sixr||''};
+  r.summary=MAN.sum||'';
+  const label=dlabel('mn');
+  if(!confirm('บันทึกเลขงวด '+label+' ?\n\nชุด 1-4: '+[1,2,3,4].map(i=>r['set'+i].num).join(' / ')+'\nชุด 6 หลัก: '+r.sixDigit.num))return;
+  const b=$('msave');b.disabled=true;mmsg('กำลังบันทึก…',1);
+  try{
+    const rec=await api('adminSaveManual',S.pw,label,r);
+    S.hist.unshift(rec);
+    for(const k in MAN)delete MAN[k];
+    render();mmsg('✅ บันทึกงวด '+label+' แล้ว User จะเห็นเป็นงวดล่าสุด',1);
+  }catch(e){b.disabled=false;mmsg(e.message);}
+}
+</script>
